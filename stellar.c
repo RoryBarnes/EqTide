@@ -60,7 +60,7 @@ double dAtmMassLossErkaev07(SECONDARY sec,double dPriLumX,double dPriMass) {
 
 double dDesiccationTimeErkaev07(SECONDARY sec,double dPriLumX,double dPriMass) {
 
-  return sec.dMassH/(4*PI*dAtmMassLossErkaev07(sec,dPriLumX,dPriMass));
+  return sec.dMassH/(dAtmMassLossErkaev07(sec,dPriLumX,dPriMass));
 }
 
 

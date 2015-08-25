@@ -1400,8 +1400,6 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,HZ *hz,INPUT input,O
   /* 
    * Secondary Spin Properties
    *
-   * BROKEN!
-   *
    */
 
   if (sec->bForceEqSpin) {
@@ -1798,7 +1796,7 @@ ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri, SECONDARY *
     if (param->iVerbose >= VERBINPUT) 
       fprintf(stderr,"WARNING: %s is negative, assuming solar units.\n",options.cParam[OPT_PRILUMX]);
     pri->dLumX *= -LSUN;
-  } else {
+  } else if (pri->dLumX > 0) {
     fprintf(stderr,"%s must be in Solar Units, make negative.\n",options.cParam[OPT_PRILUMX]);
     exit(1);
   }

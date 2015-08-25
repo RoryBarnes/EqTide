@@ -959,7 +959,7 @@ void TideForward_CPL2(PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,
       dEqSpinRate = EqSpinRate_CPL2(sec.dMeanMotion,sec.dEcc,param.bDiscreteRot);
 	if (fabs((sec.dSpinRate - EqSpinRate_CPL2(sec.dMeanMotion,sec.dEcc,param.bDiscreteRot))/EqSpinRate_CPL2(sec.dMeanMotion,sec.dEcc,param.bDiscreteRot)) < sec.dMaxLockDiff) { /* yes */
 	    sec.bForceEqSpin = 1;
-	    dDomegaDt[0] = TINY;
+	    dDomegaDt[1] = TINY;
 	    if (param.iVerbose >= VERBPROG) {
 		printf("Secondary spin locked at ");
 		fprintd(stdout,dTime/YEARSEC,param.iSciNot,param.iDigits);
