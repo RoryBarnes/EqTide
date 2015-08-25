@@ -29,105 +29,6 @@ double dSemiToMeanMotion(double dSemi,double dMass) {
   return pow(BIGG*dMass/pow(dSemi,3),0.5);
 }
 
-/* Energy Flux to Temperature */
-double dFluxToTemperature(double dFlux) {
-  return pow(dFlux/SIGMA,0.25);
-}
-
-/* Peak wavelength emission from Tidal Heating */
-double dFluxToPeakWavelength(double dFlux) {
-  double dTemp;
-
-  dTemp = dFluxToTemperature(dFlux);
-  return dTempToPeakWavelength(dTemp);
-}
-
-/* Peak Blackbody Emission Wavelength */
-double dTempToPeakWavelength(double dTeff) {
-  return WIEN/dTeff;
-}
-
-double dFluxToLuminosity(double dFlux,double dRadius) {
-  double dTemp;
-
-  dTemp = dFluxToTemperature(dFlux);
-  return 4*PI*dRadius*dRadius*pow(dTemp,4);
-}
-
-/* Luminosity of black body */ 
-double dBlackbodyLuminosity(double dRadius,double dTeff) {
-  return 4*PI*dRadius*dRadius*SIGMA*pow(dTeff,4);
-}
-
-/* Longitudinal Temperature if synchronously rotating and no heat transport */
-/* From Leger et al (2009) */
-double dNakedPlanetTemp(double dAlbedo,double dPriRad,double dSemi,double dPriTemp,double dTheta) {
-  return pow((1 - dAlbedo),0.25)*pow(dPriRad/(dSemi),0.25)*dPriTemp*pow(cos(dTheta),0.25);
-}
-
-/* Insolation -- or is it inSTELLation? */
-double dInsolation(double dLuminosity,double dSemi,double dEcc){
-  return dLuminosity/(4*PI*dSemi*dSemi*pow((1-dEcc*dEcc),0.5));
-}
-
-double dPierrehumbertGrnhsFlux(double g,double l,double r,double tref,double pref) {
-  double a,p0,k0,pstar;
-
-  a = 0.7344;
-  p0 = 1e5; /* g/cm s^2 */
-  pstar = pref*exp(l/(r*tref));
-  k0 = 0.55; /* cm/g */
-  
-  return a*SIGMA*pow(l/r,4)/pow(log(pstar/pow(2*p0*g/k0,0.5)),4);
-}
-
-double dKastingCatlingGrnhsFlux(double g,double l,double r,double tref,double pref) {
-  double kappa;
-
-  /* Gray body water vapor absorption coefficient */
-  kappa = 0.1; /* cm^2/g */
-
-  return SIGMA*pow((tref/(1-tref*(r/l)*log(g/(1.66*kappa*pref)))),4);
-}
-
-double dRnwyGrnhsFlux(double dMass,double dRadius,int iModel) {
-  double g,l,r,tref,pref;
-    
-  g = BIGG*dMass/(dRadius*dRadius);
-  l = 2.425e-4; /* ergs/g */
-  r = 4.615e-8; /* ergs/g K */
-  
-  /* Triple Point values for water of 611 Pa and 273.15 K */ 
-  tref = 273.15; /* K */
-  pref = 6110; /* g/cm s^2 */
-  
-  if (iModel == 0) { /* Pierrehumbert 2010 */
-    return dPierrehumbertGrnhsFlux(g,l,r,tref,pref);
-  } else if (iModel == 1) { /* Kasting & Catling 2012 */
-    return dKastingCatlingGrnhsFlux(g,l,r,tref,pref);
-  } else if (iModel == 2) { /* Abe et al. 2011 */
-    return 415000;
-  }
-}
-
-double dRadHeat() {
-  return 0;
-}
-
-double dTeq(double dLuminosity,double dSemi,double dEcc) {
-  return pow(dLuminosity/(16*PI*SIGMA*dSemi*dSemi*(1-dEcc*dEcc)),0.25);
-}
-
-int iSign(double x) {
-  double foo;
-
-  if (x != 0) 
-    foo = x/fabs(x);
-  else 
-    foo = 0;
-  return foo;
-}
-
 double dOrbAngMom(PRIMARY pri,SECONDARY sec) {
   /* XXX Not verified XXX */
   return pow( BIGG*(pri.dMass+sec.dMass)*sec.dSemi*(1-sec.dEcc*sec.dEcc),0.5);
@@ -240,27 +141,6 @@ void AssignZprime(PRIMARY pri,SECONDARY sec,double *z) {
     z[1] = 3*BIGG*BIGG*sec.dK2*pri.dMass*pri.dMass*(pri.dMass+sec.dMass)*pow(sec.dRadius,5)/(pow(sec.dSemi,9)*sec.dMeanMotion*sec.dQ);
 }
 
-/* Want to split this into annual and daily rates
-
-double dDaDtAnn_CPL2(PRIMARY pri,SECONDARY sec,int **epsilon,zprime[2]) {
-  double sum,psi[2];
-  int i;
-   
-  psi[0]=pri.dObliquity;
-  psi[1]=sec.dObliquity;
-
-  sum=0;
-  for (i=0;i<2;i++) 
-    sum += zprime[i]*(4*epsilon[i][0] + sec.dEcc*sec.dEcc*(-20*epsilon[i][0] + 147./2*epsilon[i][1] + 0.5*epsilon[i][2] - 3*epsilon[i][5]));
-
-  return sec.dSemi*sec.dSemi/(4*BIGG*pri.dMass*sec.dMass)*sum;
-
-}
-
-*/
-
-/* This subrotuine may be obsolete, as it calculaties the entire da/dt, but for logging purposes, dividing it up is better */
-
 double dDaDt_CPL2(PRIMARY pri,SECONDARY sec,int **epsilon,double zprime[2]) {
   double sum,psi[2];
   int i;
@@ -305,8 +185,6 @@ double dDeDt1_CPL2(double dMass,double dMassPert,double dSemi,double dEcc,int *e
     return -dSemi*dEcc/(8*BIGG*dMass*dMassPert) * foo;
 }  
 
-
-
 double dDomegaDt_CPL2(double dMass,double dRadius,double dN,double dEcc,double dC,double dPsi,int epsilon[9],double zprime) {
  
   return -zprime/(8*dMass*dC*dC*dRadius*dRadius*dN)*(4*epsilon[0] + dEcc*dEcc*(-20*epsilon[0] + 49*epsilon[1] + epsilon[2]) + 2*sin(dPsi)*sin(dPsi)*(-2*epsilon[0]+epsilon[8]+epsilon[9]));
@@ -315,14 +193,6 @@ double dDomegaDt_CPL2(double dMass,double dRadius,double dN,double dEcc,double d
 double dDoblDt_CPL2(double dMass,double dRadius,double dOmega,double dN,double dC,int epsilon[9],double dChi,double dPsi,double zprime) {
 
   return zprime*sin(dPsi)/(4*dMass*dC*dC*dRadius*dRadius*dN*dOmega) * (epsilon[0]*(1-dChi) + (epsilon[8]-epsilon[9])*(1+dChi));
-}
-
-/* Must condense these two into TideHeat */
-
-double dAnnualHeat_CPL2(int epsilon[9],double zprime,double dEcc,double dPsi) {
-}
-
-double dDailyHeat_CPL2(int epsilon[9],double zprime,double dEcc,double dN,double dOmega,double dPsi) {
 }
 
 double dTideHeat_CPL2(int epsilon[9],double zprime,double dEcc,double dN,double dOmega,double dPsi) {
@@ -366,9 +236,6 @@ double dTideHeatEq_CPL2(double z,double dEcc,double dPsi,double dN,int bDiscrete
   /* return z/8 * ((om/dN)*grot - gorb); */
   return z/8 * ((1+9.5*dEcc*dEcc)*grot - gorb);
 }
-
-
-
 
 /* 
  * The following subroutine describes the constant-phase-lag model of order 
@@ -482,82 +349,6 @@ double dTideHeatEq_CTL8(double z,double *f,double beta,double dPsi,double dN) {
     double heat;
     heat = z/pow(beta,15) * (f[0] - f[1]*f[1]/f[4] * (2*cos(dPsi)*cos(dPsi))/(1+cos(dPsi)*cos(dPsi)));
     return heat;
-    }
-
-
-/*
- * Alternative tidal heating models 
- *
- */
-
-double ViscoelasticHeat(double dMass,double dRadius, double dN, double dEcc,double dSemi,double dImk2) {
-  /* dMass is perturber mass, dRadius is body radius */
-
-  return dImk2*10.5*BIGG*dMass*dMass*pow(dRadius,5)*dN*dEcc*dEcc/pow(dSemi,6);
-}
-
-/* Tidal heat for a Maxwell body as described in Table 1 of Henning et al (2009). Note I have not double-checked this expression!! */
-
-double dImk2_Maxwell(double dViscosity,double dShearModulus,double dOmega,double dBeta) {
-  return (57*dViscosity*dOmega)/(4*dBeta*(1+(pow(1+(19*dShearModulus/(2*dBeta)),2)))*dViscosity*dViscosity*dOmega*dOmega/(dShearModulus*dShearModulus));
-}
-
-double MaxwellHeat(double dMass,double dRadius,double dN,double dEcc,double dSemi,double dViscosity,double dShearModulus) {
-  double beta,rho,g,dImk2;
-
-  rho=4*PI*PI/3*dMass/pow(dRadius,3);
-  g=BIGG*dMass/(dRadius*dRadius);
-  beta=rho*g*dRadius;
-
-  dImk2=dImk2_Maxwell(dViscosity,dShearModulus,dN,beta);
-  
-  return ViscoelasticHeat(dMass,dRadius,dN,dEcc,dSemi,dImk2);
-}
-
-double dImk2_SAS(double dViscosity,double dJu,double dCreep,double dOmega,double dBeta) {
-  return (57*dCreep*dCreep*dBeta*dViscosity*dOmega)/( pow((19+2*dBeta*(dJu+dCreep)),2) + pow(dCreep*dViscosity*dOmega*(19+2*dBeta*dJu),2));
-}
-
-double StandardAnelasticSolidHeat(double dMass,double dRadius,double dN,double dEcc,double dSemi,double dViscosity,double dJu,double dCreep) {
-  double beta,rho,g,dImk2;
-
-  rho=4*PI*PI/3*dMass/pow(dRadius,3);
-  g=BIGG*dMass/(dRadius*dRadius);
-  beta=rho*g*dRadius;
-
-  dImk2=dImk2_SAS(dViscosity,dJu,dCreep,dN,beta);
-  
-  return ViscoelasticHeat(dMass,dRadius,dN,dEcc,dSemi,dImk2);
-}
-
-
-/* Burgers Model */
-
-double BurgersC1(double dCreep,double dEtaA,double dEtaB,double dShearModulus) {
-  return dCreep + dCreep*dEtaA/dEtaB + 1./dShearModulus;
-}
-
-double BurgersC2(double dCreep,double dEtaA,double dEtaB,double dShearModulus,double dOmega) {
-  return 1./dEtaB - dEtaA*dCreep*dOmega*dOmega/dShearModulus;
-}
-
-double dImk2_Burgers(double dBeta,double dOmega,double dC1,double dC2,double dCreep,double dEtaA,double dEtaB) {
-  return (57*dBeta*dOmega*(dC2+dCreep*dOmega*dOmega*dC1*dEtaA))/(361*dOmega*dOmega+76*dBeta*dOmega*dOmega*dC1+4*dBeta*dBeta*dOmega*dOmega*dC1*dC1+pow((2*dBeta*dC2-19*dCreep*dOmega*dOmega*dEtaA),2));
-}
-
-double BurgersHeat(double dMass,double dRadius,double dN,double dOmega,double dEcc,double dSemi,double dShearModulus,double dCreep,double dEtaA,double dEtaB) {
-  double beta,rho,g,dImk2,dC1,dC2;
-
-  rho=4*PI*PI/3*dMass/pow(dRadius,3);
-  g=BIGG*dMass/(dRadius*dRadius);
-  beta=rho*g*dRadius;
-
-  dC1=BurgersC1(dCreep,dEtaA,dEtaB,dShearModulus);
-  dC2=BurgersC2(dCreep,dEtaA,dEtaB,dShearModulus,dOmega);
-
-  dImk2=dImk2_Burgers(beta,dOmega,dC1,dC2,dCreep,dEtaA,dEtaB);
-  
-  return ViscoelasticHeat(dMass,dRadius,dN,dEcc,dSemi,dImk2);
 }
 
 double NextOutput(double dTime,double dOutputInterval) {
@@ -804,38 +595,6 @@ void TideRewind_CPL2(PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,F
     dTime += dDt;
     sec.dAge -= dDt;
 
-    /* Now worry about non-tidal aspects */
-
-    /* Check Greenhouse Effects */
-
-    if (param.bGrnhsWaterLoss && sec.bWet) {
-      dSurfFlux = dTideHeat_CPL2(epsilon[1],zprime[1],sec.dEcc,sec.dMeanMotion,sec.dSpinRate,sec.dObliquity)/(4*PI*sec.dRadius*sec.dRadius) + dInsolation(pri.dLuminosity,sec.dSemi,sec.dEcc)*(1-sec.dAlbedo)/4;
-      if (dSurfFlux >= hz.dRnwyGrnhsFlux)
-	dTimeOverGrnhsLim += dDt;
-
-      if (dTimeOverGrnhsLim >= param.dGrnhsWaterLossTime) {
-	sec.bWet = 0;
-	sec.dQ = sec.dDryQ;
-	if (param.iVerbose >= VERBPROG) {
-	  printf("Water lost by runaway greenhouse at ");
-	  fprintd(stdout,-dTime/YEARSEC,param.iSciNot,param.iDigits);
-	  printf(" years.\n");
-	}
-      }
-    }
-
-    /* Adjust radii, if necessary */
-
-    if (pri.iRadContr) {
-      pri.dSpinRate -= dDSpinRateContrDt(pri.dRadius,pri.dSpinRate,pri.iRadContr,sec.dAge)*dDt;
-      pri.dRadius -= dDRadDtContr(sec.dAge,pri.iRadContr)*dDt;
-    }
-
-    if (sec.iRadContr) {
-      sec.dSpinRate -= dDSpinRateContrDt(sec.dRadius,sec.dSpinRate,sec.iRadContr,sec.dAge)*dDt;
-      sec.dRadius -= dDRadDtContr(sec.dAge,sec.iRadContr)*dDt;
-    }
-
      /* Halt? */
     if (param.halt.bHalt) {
       if (bCheckHalt(param,pri,sec,dDeDt,-dTime)) {
@@ -854,7 +613,6 @@ void TideRewind_CPL2(PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,F
   free(epsilon);
   free(chi);
   free(zprime);
-    
 }
 
 /*
@@ -996,32 +754,10 @@ void TideForward_CPL2(PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,
     else	
 	sec.dSpinRate += dDomegaDt[1]*dDt;
 
-
-
     dTime += dDt;
     sec.dAge += dDt;
 
     nsteps++;
-
-    /* Now worry about non-tidal aspects */
-
-    /* Check Greenhouse Effects */
-
-    if (param.bGrnhsWaterLoss && sec.bWet) {
-      dSurfFlux = dTideHeat_CPL2(epsilon[1],zprime[1],sec.dEcc,sec.dMeanMotion,sec.dSpinRate,sec.dObliquity)/(4*PI*sec.dRadius*sec.dRadius) + dInsolation(pri.dLuminosity,sec.dSemi,sec.dEcc)*(1-sec.dAlbedo)/4;
-      if (dSurfFlux >= hz.dRnwyGrnhsFlux)
-	dTimeOverGrnhsLim += dDt;
-	
-      if (dTimeOverGrnhsLim >= param.dGrnhsWaterLossTime) {
-	sec.bWet = 0;
-	sec.dQ = sec.dDryQ;
-	if (param.iVerbose >= VERBPROG) {
-	  printf("Water lost by runaway greenhouse at ");
-	  fprintd(stdout,dTime/YEARSEC,param.iSciNot,param.iDigits);
-	  printf(" years.\n");
-	}
-      }
-    }
 
     /* Halt? */
     if (param.halt.bHalt) {
@@ -1050,12 +786,9 @@ void TideForward_CPL2(PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,
 
   }
 
-
   free(epsilon);
   free(chi);
   free(zprime);
-  
-
 }
 
 void TideRewind_CTL8 (PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,FILES files,IO io) {
@@ -1167,40 +900,6 @@ void TideRewind_CTL8 (PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,
     dTime += dDt;
     sec.dAge -= dDt;
 
-    /* Now worry about non-tidal aspects */
-
-    /* Check Greenhouse Effects */
-
-    if (param.bGrnhsWaterLoss && sec.bWet) {
-      dSurfFlux = dTideHeat_CTL8(z[1],f,dBeta,sec.dSpinRate,sec.dObliquity,sec.dMeanMotion)/(4*PI*sec.dRadius*sec.dRadius) + dInsolation(pri.dLuminosity,sec.dSemi,sec.dEcc)*(1-sec.dAlbedo)/4;
-      if (dSurfFlux >= hz.dRnwyGrnhsFlux)
-	dTimeOverGrnhsLim += dDt;
-
-      if (dTimeOverGrnhsLim >= param.dGrnhsWaterLossTime) {
-	sec.bWet = 0;
-	sec.dTau = sec.dDryTau;
-	if (param.iVerbose >= VERBPROG) {
-	  printf("Water lost by runaway greenhouse at ");
-	  fprintd(stdout,-dTime/YEARSEC,param.iSciNot,param.iDigits);
-	  printf(" years.\n");
-	}
-      }
-    }
-
-    /* Include other Primary effects here */ 
-
-    if (pri.iRadContr) {
-      pri.dSpinRate -= dDSpinRateContrDt(pri.dRadius,pri.dSpinRate,pri.iRadContr,sec.dAge)*dDt;
-      pri.dRadius -= dDRadDtContr(sec.dAge,pri.iRadContr)*dDt;
-    }
-
-    /* Include other Secondary effects here */
-
-    if (sec.iRadContr) {
-      sec.dSpinRate -= dDSpinRateContrDt(sec.dRadius,sec.dSpinRate,sec.iRadContr,sec.dAge)*dDt;
-      sec.dRadius -= dDRadDtContr(sec.dAge,sec.iRadContr)*dDt;
-    }
-
     /* Halt? */
     if (param.halt.bHalt) {
       if (bCheckHalt(param,pri,sec,dDeDt,-dTime)) {
@@ -1220,7 +919,6 @@ void TideRewind_CTL8 (PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output,
       printf("Merge at %.2e years!\n",-dTime/YEARSEC);
       return;
     }
-	
   }
   free(z);
   free(chi);
@@ -1361,34 +1059,6 @@ void TideForward_CTL8 (PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output
 
     dTime += dDt;
     sec.dAge += dDt;
-
-    /* Now worry about non-tidal aspects */
-
-    /* Check Greenhouse Effects */
-
-    if (param.bGrnhsWaterLoss && sec.bWet) {
-      dSurfFlux = dTideHeat_CTL8(z[1],f,dBeta,sec.dSpinRate,sec.dObliquity,sec.dMeanMotion)/(4*PI*sec.dRadius*sec.dRadius) + dInsolation(pri.dLuminosity,sec.dSemi,sec.dEcc)*(1-sec.dAlbedo)/4;
-      if (dSurfFlux >= hz.dRnwyGrnhsFlux)
-	dTimeOverGrnhsLim += dDt;
-
-      if (dTimeOverGrnhsLim >= param.dGrnhsWaterLossTime) {
-	sec.bWet = 0;
-	sec.dTau = sec.dDryTau;
-	if (param.iVerbose >= VERBPROG) {
-	  printf("Water lost by runaway greenhouse at ");
-	  fprintd(stdout,dTime/YEARSEC,param.iSciNot,param.iDigits);
-	  printf(" years.\n");
-	}
-      }
-    }
-
-    /* Adjust White Dwarf Luminosity */
-
-    if (pri.bWD) {
-      pri.dLuminosity = dBergeronWDLum(sec.dAge);
-      pri.dTeff = dTeff(pri.dLuminosity,pri.dRadius);
-    }
-
     nsteps++;
 
     /* Halt? */
@@ -1417,11 +1087,7 @@ void TideForward_CTL8 (PARAM param,PRIMARY pri,SECONDARY sec,HZ hz,OUTPUT output
       nsteps=0;
 
     }
-
-
-
   }
-
   free(z);
   free(chi);
 }
