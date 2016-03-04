@@ -1,18 +1,21 @@
+/**************************************************************************
+ * output.h                                                              *
+ *                                                                        *
+ * Written by Rory Barnes                                                 * 
+ *                                                                        *
+ * This file contains definitions for output options.                     *
+ *                                                                        *
+ **************************************************************************/
+
 /* 
  * Output Otions
  * 
  * Enter new integer definition here. Then add to 
  * InitializeOutput 
  *
-*/
+ */
 
 #define OUT_AGE			10
-
-#define OUT_SECMASSLOSS         25
-#define OUT_SECMASSH            30
-
-#define OUT_HZINNERINSOL	50
-#define OUT_HZOUTERINSOL	60
 
 #define OUT_ORBANGMOM		100
 #define OUT_ORBDADT		105
@@ -31,9 +34,6 @@
 #define OUT_ORBSEMI		170
 
 #define OUT_PRIANGMOM		200
-#define OUT_PRICONTRDPERDT	205
-#define OUT_PRICONTRDRADDT	210
-#define OUT_PRICONTRDSPINDT	215
 #define OUT_PRIDADT		220
 #define OUT_PRIDEDT		225
 #define OUT_PRIDOBLDT		230
@@ -44,7 +44,6 @@
 #define OUT_PRIGAMMAROT	        245
 #define OUT_PRIGAMMAORB         247
 #define OUT_PRIHEAT		250
-#define OUT_PRILUM              255
 #define OUT_PRIOBL		260
 #define OUT_PRIRAD		265
 #define OUT_PRIROTEN		270
@@ -52,7 +51,6 @@
 #define OUT_PRISPINRATE		277
 #define OUT_PRISURFHEAT		280
 #define OUT_PRISURFFLUX		282
-#define OUT_PRITEFF             285
 #define OUT_PRITIDEDPERDT	290
 #define OUT_PRITIDEDSPINDT	292
 #define OUT_PRITIDEHEAT		295
@@ -60,9 +58,6 @@
 #define OUT_PRIVROT		299
 
 #define OUT_SECANGMOM		300
-#define OUT_SECCONTRDPERDT	302
-#define OUT_SECCONTRDRADDT	305
-#define OUT_SECCONTRDSPINDT	306
 #define OUT_SECDADT		308
 #define OUT_SECDEDT		310
 #define OUT_SECDOBLDT		312

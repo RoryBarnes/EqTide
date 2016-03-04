@@ -1,6 +1,11 @@
-/* 
- * Header file for options
- * /
+/**************************************************************************
+ * options.h                                                              *
+ *                                                                        *
+ * Written by Rory Barnes                                                 * 
+ *                                                                        *
+ * This file contains definitions for input options.                      *
+ *                                                                        *
+ **************************************************************************/
 
 /* 
  * Input Options
@@ -13,103 +18,92 @@
  *
  */
 
-#define NUMOPT			1000
-
 #define OPT_AGE			10
 
-#define OPT_BACK		100
-#define OPT_BACKFILE   	        110
-#define OPT_BACKETA             120
-#define OPT_BACKOUTPUTTIME	130
-#define OPT_BACKSTOPTIME	140
-#define OPT_BACKTIMESTEP	150
-#define OPT_BACKVARDT	        160
+#define OPT_BACK		12
+#define OPT_BACKFILE   	        14
+#define OPT_BACKOUTPUTTIME	18
+#define OPT_BACKSTOPTIME	20
+#define OPT_BACKTIMESTEP	22
 
-#define OPT_DISCRETEROT         180
+#define OPT_DISCRETEROT         26
 
-#define OPT_FORW		200
-#define OPT_FORWFILE		210
-#define OPT_FORWETA		220
-#define OPT_FORWOUTPUTTIME	230
-#define OPT_FORWSTOPTIME	240
-#define OPT_FORWTIMESTEP	250
-#define OPT_FORWVARDT           260
+#define OPT_FORW		28
+#define OPT_FORWFILE		30
+#define OPT_FORWOUTPUTTIME	34
+#define OPT_FORWSTOPTIME	36
+#define OPT_FORWTIMESTEP	38
 
-#define OPT_HALTDBLSYNC	        300
-#define OPT_HALTMERGE           325
-#define OPT_HALTMINECC          330
-#define OPT_HALTMINPRIOBL       335
-#define OPT_HALTMINSECOBL       340
-#define OPT_HALTMINSEMI		345
-#define OPT_HALTPOSDEDT         350 
-#define OPT_HALTPRILOCK         360
-#define OPT_HALTSECLOCK         370
-#define OPT_HALTSECSYNC         375
+#define OPT_HALTDBLSYNC	        42
+#define OPT_HALTMAXECC	        44
+#define OPT_HALTMERGE           46
+#define OPT_HALTMINECC          48
+#define OPT_HALTMINPRIOBL       50
+#define OPT_HALTMINSECOBL       52
+#define OPT_HALTMINSEMI		54
+#define OPT_HALTPOSDEDT         56 
+#define OPT_HALTPRILOCK         58
+#define OPT_HALTSECLOCK         60
+#define OPT_HALTSECSYNC         62
 
-#define OPT_LOG		        500
-#define OPT_LOGFILE		510
+#define OPT_INTEGRATION         63
 
-#define OPT_MINVALUE            520
+#define OPT_LOG		        64
+#define OPT_LOGFILE		66
 
-#define OPT_ORBECC		530
-#define OPT_ORBMEANMOTION	540
-#define OPT_ORBPER		550
-#define OPT_ORBSEMI		560
+#define OPT_MINVALUE            68
 
-#define OPT_OUTDIGITS           570
-#define OPT_OUTPUTORDER		580
-#define OPT_OUTSCINOT	        590
+#define OPT_ORBECC		70
+#define OPT_ORBMEANMOTION	72
+#define OPT_ORBPER		74
+#define OPT_ORBSEMI		76
 
-#define OPT_PRICONTRRAD         600
-#define OPT_PRIFORCEEQSPIN      605 
-#define OPT_PRIK2		610
-#define OPT_PRILUM	        615
-#define OPT_PRIMASS		620
-#define OPT_PRIMASSRAD	        630
-#define OPT_PRIMAXLOCKDIFF      635
-#define OPT_PRIOBL	        640
-#define OPT_PRIQ		645
-#define OPT_PRIRAD	        650
-#define OPT_PRIRG		655
-#define OPT_PRISPINPER	        660
-#define OPT_PRISPINRATE	        665
-#define OPT_PRITAU		670
-#define OPT_PRIVROT             680
+#define OPT_OUTDIGITS           78
+#define OPT_OUTPUTORDER		80
+#define OPT_OUTSCINOT	        82
 
-#define OPT_SECFORCEEQSPIN      715
-#define OPT_SECK2               720
-#define OPT_SECMASS		730
-#define OPT_SECMASSRAD	        735
-#define OPT_SECMAXLOCKDIFF      745
-#define OPT_SECOBL	        750
-#define OPT_SECQ		755
-#define OPT_SECRAD	        770
-#define OPT_SECRG		775
-#define OPT_SECSPINPER	        780
-#define OPT_SECSPINRATE	        782
-#define OPT_SECSYNCECC          785
-#define OPT_SECTAU		790
-#define OPT_SECVROT             795
+#define OPT_PRIFORCEEQSPIN      84 
+#define OPT_PRIK2		86
+#define OPT_PRIMASS		88
+#define OPT_PRIMASSRAD	        90
+#define OPT_PRIMAXLOCKDIFF      92
+#define OPT_PRIOBL	        94
+#define OPT_PRIQ		96
+#define OPT_PRIRAD	        98
+#define OPT_PRIRG		100
+#define OPT_PRISPINPER	        102
+#define OPT_PRISPINRATE	        104
+#define OPT_PRITAU		106
+#define OPT_PRIVROT             108
 
-#define OPT_SYSTEMNAME		800
+#define OPT_SECFORCEEQSPIN      110
+#define OPT_SECK2               112
+#define OPT_SECMASS		114
+#define OPT_SECMASSRAD	        116
+#define OPT_SECMAXLOCKDIFF      118
+#define OPT_SECOBL	        120
+#define OPT_SECQ		122
+#define OPT_SECRAD	        124
+#define OPT_SECRG		126
+#define OPT_SECSPINPER	        128
+#define OPT_SECSPINRATE	        130
+#define OPT_SECSYNCECC          132
+#define OPT_SECTAU		134
+#define OPT_SECVROT             136
 
-#define OPT_TIDEMODEL		850
+#define OPT_SYSTEMNAME		138
 
-#define OPT_UNITANGLE		900
-#define OPT_UNITLENGTH		910
-#define OPT_UNITMASS		920
-#define OPT_UNITTEMP	        930
-#define OPT_UNITTIME		940
+#define OPT_TIDEMODEL		140
+#define OPT_TIMESTEPCOEFF       141
 
-#define OPT_VERBOSE		999
+#define OPT_UNITANGLE		142
+#define OPT_UNITLENGTH		144
+#define OPT_UNITMASS		146
+#define OPT_UNITTEMP	        148
+#define OPT_UNITTIME		150
 
-typedef struct {
-    char cParam[NUMOPT][24];
-    char cDescr[NUMOPT][256];
-    int iType[NUMOPT];
-    char cDefault[NUMOPT][24];
-
-} OPTIONS;
+#define OPT_VARDT               151
+#define OPT_VERBOSE		152
 
 /* This struct is for variable that store the line of redundant
    options. */
