@@ -1,0 +1,101 @@
+# Reverse evolution of Earth-Moon system
+
+# Lines that begin with the pound are comments
+
+# The "options" are all the parameter names. They must be spelled exactly.
+# The options names are available on the onboard help: ./eqtide -h.
+
+sSystemName		earthmoon	# System Name
+sTideModel		cpl		# Tidal Model (CPL or CTL)
+#sTideModel		ctl		# Tidal Model (CPL or CTL)
+
+
+# Comments can go anywhere in a line. Blank lines are ignored.
+
+# EQTIDE has many options for units. The defaults are cm, gm, sec and degrees.
+
+# Units
+sUnitMass		Earth		# Mass Units: g, kg, solar, Earth, Jup, Sat
+sUnitLength		Earth		# Length Units: cm, m, km, solar, Earth, Jup, AU
+sUnitTime		Days		# Time Units: sec, days, years, Myr, Gyr
+sUnitAngle		Degrees		# Angle Units: deg, rad
+
+# The first lowercase letter denotes the option type: bool, integer, double, or string.
+# All options have a default option, you can see them with the help, too.
+
+# Output Precision
+iDigits			8		# Number of Digits after Decmial
+iSciNot			4		# Log_10 to change to Scientific Notation
+
+# EQTIDE logs the system as entered and in system units. 
+# If an integration is selected, the final system is also logged.
+
+# Verbosity
+iVerbose		5		# Verbosity Level, 0=none, 5=all
+bDoLog			1		# Write a log file?
+sLogFile		earth.log	# Log file name
+
+# Properties of the bodies are split into a "primary" and a "secondary".
+# The units are those specified above, but can sometimes be overridden with a "-".
+
+# Primary
+dPrimaryMass		1		# Mass of central body (negative for solar units)
+dPrimaryRadius		1		# Radius of central body (negative for solar units)
+dPrimaryQ		12		# Tidal Q of central body
+#dPrimaryQ		34		# Tidal Q of central body
+#dPrimaryTau		-125		# Time lag of central body (negative for seconds)
+dPrimaryTau		-640		# Time lag of central body (negative for seconds)
+dPrimaryK2		0.299		# Love number of degree 2 for central body
+dPrimarySpinPeriod	1		# Spin period of central body
+#dPrimaryObliquity	0
+dPrimaryObliquity	23.5
+
+# Secondary
+dSecondaryMass		-0.0123		# Mass of orbiter (negative for Earth units)
+dSecondaryRadius	-0.273		# Radius of orbiter (negative for Earth units)
+dSecondaryQ		50		# Tidal Q of orbiter
+dSecondaryTau		-64		# Time lag for orbiter (negative for seconds)
+dSecondaryK2		0.3		# Love number of degree 2 for orbiter
+#dSecondaryObliquity	0		# Orbiter's Obliquity
+dSecondaryObliquity	6.68		# Orbiter's Obliquity
+bSecondaryForceEqSpin	1
+
+# Properties of Orbit
+
+dSemi			60.32		# Semi-major axis
+#dEcc			0		# Eccentricity
+dEcc			0.0549		# Eccentricity
+
+# Integration options. 
+
+sIntegration		RungeKutta	# Integration Method (RK4 or Euler)
+#sIntegration		Euler		# Integration Method (RK4 or Euler)
+#bDiscreteRot		1		# In CPL, use disrete rot. states?
+bVarDt			1		# Use variable timestepping?
+dTimestepCoeff		0.01		# Fraction of dynamical timestep
+dHaltMinSemi		5
+dMinValue		1e-5
+
+# Both forward and backward integrations are available. 
+
+# Backward Integration
+bDoBackward		1		# Do backward integration?
+dBackwardTimeStep	100		# Backward time step
+dBackwardStopTime	365.25e10	# Backward integration time
+dBackwardOutputTime	365.25e7	# Backward output interval
+
+# Forward Integration
+#bDoForward		1		# Do forward integration?
+#dForwardTimeStep	100		# Forward time step
+#dForwardStopTime	365.25e10	# Forward integration time
+#dForwardOutputTime	365.25e7	# Forward output interval
+
+# If an integration is selected, numerous output parameters are available.
+# The output name need only be unambiguous.
+# The units will be those specified above, but may be overriden by the "-".
+# See help for a list of all output parameters.
+
+# Output Order
+sOutputOrder		-Time Semi Ecc -PriPer PriObl -SecPer SecObl -OrbPeriod 
+
+
