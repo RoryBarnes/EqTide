@@ -17,13 +17,6 @@
 #include "eqtide.h"
 #include "output.h"
 
-void InitializeIO(IO *io) {
-  io->exit_param = EXIT_PARAM;
-  io->exit_units = EXIT_UNITS;
-  io->exit_exe = EXIT_EXE;
-  io->exit_output = EXIT_OUTPUT;
-}
-
 void InitializeOutput(OUTPUT *output) {
   int i;
   
