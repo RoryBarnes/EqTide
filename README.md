@@ -14,7 +14,7 @@ the classic "acceleration problem" of the lunar
 expansion. Kepler22b.in performs a forward integration of the
 Kepler-22 b system. To run either:
 
-> eqtide <file>
+> eqtide file
 
 The input file contains a list of options that can be set, as well as
 output parameters that printed to a file during an integration. The
