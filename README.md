@@ -28,7 +28,8 @@ To see the full list of input options and output parameters:
 
 There are still a few outstanding issues related to input and output,
 but for the most part the software works and is user-friendly. The
-integration is robust.
+integration is robust. This software has been tested on the following OS
+platforms: Mac OS 10.11.
 
 This code was developed under the National Science Foundation (USA)
 grant AST-1110882, as well as NASA Cooperative Agreement NNA13AA93A.
