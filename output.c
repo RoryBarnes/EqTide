@@ -387,7 +387,7 @@ void InitializeOutput(OUTPUT *output) {
 }
 
 void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO io,int iEnd) {
-  int i,j,k,ok,foo; // foo is a placehold for EqSpinRate_CTL8
+  int i,j,k,foo; // foo is a placehold for EqSpinRate_CTL8
   FILE *fp;
   double tmp;
   char cTime[16],cTmp[24];
@@ -585,10 +585,6 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
 	  }
 	}
 	fprintf(fp," ");
-      }
-      if (!ok) {
-	fprintf(stderr,"ERROR: Unknown Parameter in cOutputOrder: param.cOutputOrder[%d] = %s.\n",j,param.cOutputOrder[j]);
-	exit(io.exit_param);
       }
     }
     fprintf(fp,"\n");

@@ -1,0 +1,77 @@
+# Forward Integration of Kepler-22 b
+# Lines that begin with the pound are comments
+
+# The "options" are all the parameter names. They must be spelled exactly.
+# The options names are available on the onboard help: ./eqtide -h.
+# Options can appear in any order, 1 per line.
+
+sSystemName           kepler22		# System Name
+sTideModel            CPL		# Tidal Model (CPL or CTL)
+iVerbose              5
+
+# Comments can go anywhere in a line. Blank lines are ignored.
+
+# EQTIDE has many options for units. The defaults are cm, gm, sec and degrees.
+
+sUnitMass             solar		# Mass Units: g, kg, solar, Earth, Jup, Sat
+sUnitLength           AU		# Length Units: cm, m, km, solar, Earth, Jup, AU
+sUnitTime             year		# Time Units: sec, days, years, Myr, Gyr
+sUnitAngle            degrees		# Angle Units: deg, rad
+
+
+bDiscreteRot          1
+
+
+# The first lowercase letter denotes the option type: bool, integer, double, or string.
+# All options have a default option, you can see them with the help, too.
+
+# Output Precision
+iDigits               8
+iSciNot               4
+
+# EQTIDE logs the system as entered and in system units. 
+# If an integration is selected, the final system is also logged.
+bDoLog                1
+
+# Properties of the bodies are split into a "primary" and a "secondary".
+# The units are those specified above, but can sometimes be overridden with a "-".
+
+# Primary
+dPrimaryMass          0.97		# Mass of central body (negative for solar units)
+dPrimaryRadius        -0.979		# Radius of central body (negative for solar units)
+dPrimarySpinPeriod    -30		# Spin period of central body
+dPrimaryObliquity     0
+dPrimaryRadGyra       0.5		# Radius of Gyration	
+dPrimaryK2            0.5		# Love Number of degree 2
+dPrimaryQ             1e6		# Tidal Q
+
+# Secondary
+dSecondaryMass        -23.7
+dSecondaryRadius      -2.38
+dSecondarySpinPeriod  -1
+dSecondaryObliquity   23.5
+dSecondaryK2          0.3
+dSecondaryRadGyra     0.5		# Radius of Gyration	
+dSecondaryQ           12
+dSecondaryMaxLockDiff 0.01		# Frac. diff in periods to force locking
+
+# Properties of the Orbit
+dSemi                 0.849
+dEcc                  0.1
+
+# Both forward and backward integrations are available. 
+
+bDoForward            1			# Do Forward Integration?
+bVarDt                1			# Use variable timestepping?
+dForwardStopTime      1.5e10		# Stop Time
+dForwardOutputTime    1e6		# Output Interval
+dTimestepCoeff        0.1		# Fraction of dynamical timestep
+dMinValue             1e-10		# Reduce e or obl to 0 at this value
+
+# If an integration is selected, numerous output parameters are available.
+# The output name need only be unambiguous.
+# The units will be those specified above, but may be overriden by the "-".
+# See help for a list of all output parameters.
+
+# Output Order
+sOutputOrder          Time Semi Ecc -SecPer SecObl -SecEqSurfFlux
