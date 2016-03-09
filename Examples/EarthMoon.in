@@ -1,14 +1,13 @@
-# Reverse evolution of Earth-Moon system
-
+# Backward Integration of Earth-Moon system
 # Lines that begin with the pound are comments
 
 # The "options" are all the parameter names. They must be spelled exactly.
 # The options names are available on the onboard help: ./eqtide -h.
+# Options can appear in any order, 1 per line.
 
 sSystemName		earthmoon	# System Name
 sTideModel		cpl		# Tidal Model (CPL or CTL)
 #sTideModel		ctl		# Tidal Model (CPL or CTL)
-
 
 # Comments can go anywhere in a line. Blank lines are ignored.
 
@@ -73,8 +72,8 @@ sIntegration		RungeKutta	# Integration Method (RK4 or Euler)
 #bDiscreteRot		1		# In CPL, use disrete rot. states?
 bVarDt			1		# Use variable timestepping?
 dTimestepCoeff		0.01		# Fraction of dynamical timestep
-dHaltMinSemi		5
-dMinValue		1e-5
+dHaltMinSemi		5		# Halt at this semi-major axis
+dMinValue		1e-5		# Reduce e or obl to 0 at this value
 
 # Both forward and backward integrations are available. 
 

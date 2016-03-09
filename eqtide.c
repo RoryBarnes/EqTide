@@ -821,6 +821,16 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
   if (param->bVarDt) 
     dDt = AssignDt(pri,sec,(dTimeOut - dTime),param->dTimestepCoeff);
 
+  // Should a body already be tidally locked?
+  CheckTideLock(param,pri,sec,io,dTime);
+
+  /* Check to see if a tidally-locked body requires a halt. */
+  if (param->halt.bHalt) {
+    if (bCheckHalt(param,pri,sec,io,dTime)) {
+      Output(param,pri,sec,output,io,dTime,dDt,fp);
+      return;
+    }
+  }
   /* Write out initial conditions */
 
   Output(param,pri,sec,output,io,dTime,dDt,fp);
