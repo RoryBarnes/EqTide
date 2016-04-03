@@ -1,3 +1,25 @@
+/**********************************************************************
+ *                                                                    *
+ * EQTIDE is a general integrator of "equilibrium tide" models        *
+ * as originally conceived by George Darwin. These equation were      *
+ * first assembled in Heller, Leconte & Barnes (2011), and the        *
+ * version first is released simultaneously with Barnes, R. (2016).   *
+ *                                                                    *
+ * EQTIDE is optimized for a rocky planet orbiting a main sequence    *
+ * star, but is easily applied to any generic two-body system.        *
+ * Example runs are provided at https://github.com/RoryBarnes/EqTide. *
+ * Please submit pull requests if you find an error!                  *
+ *                                                                    *
+ * EQTIDE was written by Rory Barnes.                                 *
+ *                                                                    *
+ * eqtide.h                                                           *
+ *                                                                    *
+ * Header file for EQTIDE. All structs and global variables are       *
+ * declared here and in options.h and output.h.                       *
+ *                                                                    *
+ **********************************************************************/
+
+
 #define MEARTH        5.9742e27
 #define MSUN          1.98892e33
 #define AUCM          1.49598e13
@@ -42,159 +64,169 @@
 #define EULER         0
 #define RK4           1
 
-/*! The primary (more massive) body in the system. This struct does not contain orbital information. */
+/*! The primary (more massive) body in the system. This struct 
+  does not contain orbital information. */
 
 typedef struct {
-  double dMass;		/* Mass of star */
-  double dRadius;	/* Radius of star */
-  double dTau;          /* Time lag */
-  double dQ;		/* Tidal Q of star */
-  double dK2;		/* Love number of star */
-  double dObliquity;    /* Obliquity */
-  double dSpinRate;     /* Rotation Rate */
-  double dRG;           /* Radius of Gyration */
-  double *iEpsilon;     /* Signs of phase lags */
+  double dMass;		/**< Mass of star */
+  double dRadius;	/**< Radius of star */
+  double dTau;          /**< Time lag */
+  double dQ;		/**< Tidal Q of star */
+  double dK2;		/**< Love number of star */
+  double dObliquity;    /**< Obliquity */
+  double dSpinRate;     /**< Rotation Rate */
+  double dRG;           /**< Radius of Gyration */
+  double *iEpsilon;     /**< Signs of phase lags */
 
-  int bDoQPrime;	/* Read in Q' instead of Q (and ignore k2)? */
-  int bForceEqSpin;     /* Force spin rate to be equilibrium? */
-  double dMaxLockDiff;  /* When to set spin rate to equilibrium */
+  int bDoQPrime;	/**< Read in Q' instead of Q (and ignore k2)? */
+  int bForceEqSpin;     /**< Force spin rate to be equilibrium? */
+  double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
-  int iMassRad;         /* Mass-Radius relationship identifier */
+  int iMassRad;         /**< Mass-Radius relationship identifier */
 
-  double dDomegaDt;     /** Time derivative of spin rate */
-  double dDobliquityDt; /** Time derivative of obliquity */
+  double dDomegaDt;     /**< Time derivative of spin rate */
+  double dDobliquityDt; /**< Time derivative of obliquity */
 } PRIMARY;
 
-/*! The secondary (less massive) body in the system. This struct contains the orbital information. */
+/*! The secondary (less massive) body in the system. This struct 
+  contains the orbital information. */
 
 typedef struct {
-  double dMass;		/* Planetary Mass */
-  double dRadius;	/* Planetary Radius */
-  double dTau;          /* Time lag */
-  double dQ;		/* Planetary Tidal Q */
-  double dK2;		/* Planetary Love number */
-  double dObliquity;    /* Obliquity */
-  double dSpinRate;     /* Rotation rate */
-  double dRG;           /* Radius of Gyration */
-  double dSyncEcc;      /* Synchronous rotation below this e */
+  double dMass;		/**< Planetary Mass */
+  double dRadius;	/**< Planetary Radius */
+  double dTau;          /**< Time lag */
+  double dQ;		/**< Planetary Tidal Q */
+  double dK2;		/**< Planetary Love number */
+  double dObliquity;    /**< Obliquity */
+  double dSpinRate;     /**< Rotation rate */
+  double dRG;           /**< Radius of Gyration */
+  double dSyncEcc;      /**< Synchronous rotation below this e */
 
-  int bDoQPrime;	/* Read in Q' instead of Q (and ignore k2)? */
-  int bForceEqSpin;     /* Tidally lock planet? */
-  double dMaxLockDiff;  /* When to set spin rate to equilibrium */
+  int bDoQPrime;	/**< Read in Q' instead of Q (and ignore k2)? */
+  int bForceEqSpin;     /**< Tidally lock planet? */
+  double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
-  double dSemi;         /* Semi-major axis */
-  double dEcc;          /* Eccentricity */
-  double dMeanMotion;   /* Mean Motion */
-  double dAge;          /* System Age */
+  double dSemi;         /**< Semi-major axis */
+  double dEcc;          /**< Eccentricity */
+  double dMeanMotion;   /**< Mean Motion */
+  double dAge;          /**< System Age */
 
-  int iMassRad;         /* Mass-Radius relationship identifier */
+  int iMassRad;         /**< Mass-Radius relationship identifier */
 
-  double dDomegaDt;     /** Time derivative of spin rate */
-  double dDobliquityDt; /** Time derivative of obliquity */
-  double dDaDt;         /** Time derivative of semi-major axis */
-  double dDeDt;         /** Time derivative of eccentricity */
+  double dDomegaDt;     /**< Time derivative of spin rate */
+  double dDobliquityDt; /**< Time derivative of obliquity */
+  double dDaDt;         /**< Time derivative of semi-major axis */
+  double dDeDt;         /**< Time derivative of eccentricity */
 } SECONDARY;
 
 typedef struct {
-  int iVerbose;                 /* Verbosity: 0=no STDOUT, 1=all */
+  int iVerbose;         /**< Verbosity: 0=no STDOUT, 1=all */
 
-  /* Output Notation */
-  int iDigits;
-  int iSciNot;
+  int iDigits;          /**< Number of digits after the decimal. */
+  int iSciNot;          /**< Decade to change from flt. point to exp. notation */
 
-  int exit_param;       /* Exit code for failure to specify necessary paramter */
-  int exit_io;          /* Exit code for failure to open/close a file */
-  int exit_input;       /* Exit code for incompatible paramters */
-  int exit_exe;         /* Exit code for execution error */
-  int exit_units;
-  int exit_output;
+  int exit_param;       /**< Exit code for failure to specify necessary paramter */
+  int exit_io;          /**< Exit code for failure to open/close a file */
+  int exit_input;       /**< Exit code for incompatible paramters */
+  int exit_exe;         /**< Exit code for execution error */
+  int exit_units;       /**< Exit code for unit conversion error */
+  int exit_output;      /**< Exit code for error during output */
+
 } IO;
 
+/*! Function pointer to the derivative subroutines. This variable is set 
+  to the address of the subroutines that calculate the deriviatives.
+  The two options are CPL or CTL as set by iTideModel. */
 typedef void (*fvDerivs)(PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double,int);
+
+/*! Function pointer to the equilibrium (tide-locked) spin frequency, either
+  CPL or CTL. */
 typedef double (*fdEqSpin)(double,double,double,int);
 
 typedef struct {
-  int bHalt;            /* Any halts? */
-  int bDblSync;
-  int bMerge;           /* Halt for merge? */
-  double dMinSemi;	/* Halt integration at this semi-major axis */
-  double dMinPriObl;	/* Halt integration at this obliquity */
-  double dMinSecObl;	/* Halt integration at this obliquity */
-  double dMaxEcc;	/* Halt integration at this eccentricity */
-  double dMinEcc;	/* Halt integration at this eccentricity */
-  int bPosDeDt;         /* Halt when de/dt > 0 */
-  int bPriLock;         /* Halt primary becomes tide locked? */
-  int bSecLock;         /* Halt secondary becomes tide locked? */
-  int bSecSync;         /* Halt is secondary rotation becomes synchronous? */
+  int bHalt;            /**< Check for halts? */
+  int bDblSync;         /**< Halt for double synchronous rotation? */
+  int bMerge;           /**< Halt for merge? */
+  double dMinSemi;	/**< Halt integration at this semi-major axis */
+  double dMinPriObl;	/**< Halt integration at this obliquity */
+  double dMinSecObl;	/**< Halt integration at this obliquity */
+  double dMaxEcc;	/**< Halt integration at this eccentricity */
+  double dMinEcc;	/**< Halt integration at this eccentricity */
+  int bPosDeDt;         /**< Halt when de/dt > 0 */
+  int bPriLock;         /**< Halt primary becomes tide locked? */
+  int bSecLock;         /**< Halt secondary becomes tide locked? */
+  int bSecSync;         /**< Halt if secondary rotation becomes synchronous? */
 } HALT;
 
 typedef struct {
   HALT halt;
 
-  int iUnitMass;                /* Mass Unit for input/output */
-  int iUnitLength;              /* Length Unit for input/output */
-  int iUnitAngle;               /* Angle Unit for input/output */
-  int iUnitTime;                /* Time Unit for input/output */
+  int iUnitMass;        /**< Mass Unit for input/output */
+  int iUnitLength;      /**< Length Unit for input/output */
+  int iUnitAngle;       /**< Angle Unit for input/output */
+  int iUnitTime;        /**< Time Unit for input/output */
 
-  char cSystemName[16];	        /* System name */
-  int iTideModel;               /* Integer version of tide model */
-  int bDiscreteRot;		/* Use Discrete Rotation model (CPL) */
+  char cSystemName[16];	/**< System name */
+  int iTideModel;       /**< Integer version of tide model */
+  int bDiscreteRot;	/**< Use Discrete Rotation model (CPL) */
 
-  int bLog;                     /* Write log file? */
+  int bLog;             /**< Write log file? */
 
-  double l0;                    /* Initial angular momentum */
-  double dl;                    /* Change in angular momentum: (l-l0)/l0 */
+  double l0;            /**< Initial angular momentum */
+  double dl;            /**< Change in angular momentum: (l-l0)/l0 */
  
-  char cOutputOrder[NUMOUT][24];/* Output order */
-  int iNumCols;                 /* Number if columns in output file */
+  char cOutputOrder[NUMOUT][24]; /**< Output order */
+  int iNumCols;         /**< Number if columns in output file */
 
-  double dMinValue;             /* Minimum value for e and obl */
+  double dMinValue;     /**< Minimum value for e and obl */
 
   /* Parameters to perform forward integration */
-  int bDoForward;		/* Perform forward integration? */
-  double dForwTimeStep;	        /* Time step for forward integration (years) */
-  double dForwStopTime;	        /* Forward integration time (years) */
-  double dForwOutputTime;	/* Output interval in forward integration (years) */
+  int bDoForward;	/**< Perform forward integration? */
+  double dForwTimeStep;	/**< Time step for forward integration (years) */
+  double dForwStopTime;	        /**< Forward integration time (years) */
+  double dForwOutputTime;	/**< Output interval in forward integration (years) */
 
   /* Parameters to perform reverse integration */
-  int bDoBackward;		/* Perfrom backward integration? */
-  double dBackTimeStep;	        /* Time step for backward integration (years) */
-  double dBackStopTime;	        /* Backward integration time (years) */
-  double dBackOutputTime;	/* Output interval in Backward integration (years) */
+  int bDoBackward;		/**< Perfrom backward integration? */
+  double dBackTimeStep;	        /**< Time step for backward integration (years) */
+  double dBackStopTime;	        /**< Backward integration time (years) */
+  double dBackOutputTime;	/**< Output interval in Backward integration (years) */
 
-  int bVarDt;                   /* Use variable timestep? */
-  double dTimestepCoeff;        /* Variable Timestep coefficients */
+  int bVarDt;                   /**< Use variable timestep? */
+  double dTimestepCoeff;        /**< Variable Timestep coefficients */
 
-  double dMinObliquity;         /* When Obliquity reaches this value, it is forced to 0 */
+  double dMinObliquity;         /**< When Obliquity reaches this value, it is forced to 0 */
 
   int iIntegration;             /**< Integration method */
   fvDerivs fDerivs;             /**< Function pointer to derivatives */
   fdEqSpin fEqSpin;             /**< Function pointer to equilibrium spin rate */
 } PARAM;
 
+
+/*! Function pointer to integration method, either Euler or Runge-Kutta. */
 typedef double (*fdStep)(PARAM*,PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double*,double,int);
 
 typedef struct {
-  char *cExe; /* Name of executable */
-  char *cIn;  /* Input file */
-  char cFor[32]; /* Forward integration */
-  char cBack[32];/* Backward integraiton */
-  char cLog[32]; /* Log file */
+  char *cExe;     /**< Name of executable */
+  char *cIn;      /**< Input file */
+  char cFor[32];  /**< Forward integration */
+  char cBack[32]; /**< Backward integraiton */
+  char cLog[32];  /**< Log file */
 } FILES;
 
 typedef struct {
-  char cParam[NUMOPT][24];
-  char cDescr[NUMOPT][256];
-  int iType[NUMOPT];
-  char cDefault[NUMOPT][24];
+  char cParam[NUMOPT][24];   /**< Option name */
+  char cDescr[NUMOPT][256];  /**< Option description */
+  int iType[NUMOPT];         /**< Option type (cast) */
+  char cDefault[NUMOPT][24]; /**< Default value */
 } OPTIONS;
 
 typedef struct {
-  char cParam[NUMOUT][24];
-  char cDescr[NUMOUT][256];
-  int iNeg[NUMOUT];
-  char cNeg[NUMOUT][24];
-  double dConvert[NUMOUT];
+  char cParam[NUMOUT][24];   /**< Output parameter name */
+  char cDescr[NUMOUT][256];  /**< Output descripton */
+  int iNeg[NUMOUT];          /**< Was option negative? (Sets units) */
+  char cNeg[NUMOUT][24];     /**< String description of output units */
+  double dConvert[NUMOUT];   /**< Conversion value for negative output */
 } OUTPUT;
 
 void fprintd(FILE*,double,int,int);
