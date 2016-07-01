@@ -987,7 +987,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
       if (output->iNeg[OUT_ORBDADT])
 	col[j+n] *= output->dConvert[OUT_ORBDADT];
       else /* AU/Gyr */
-	col[j+n] *= dTimeUnit(param->iUnitTime,io->exit_units);
+	col[j+n] *= dTimeUnit(param->iUnitTime,io->exit_units)/dLengthUnit(param->iUnitLength,io->exit_units);
       ncol++;
     }
     
@@ -1261,7 +1261,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
       if (output->iNeg[OUT_SECDEDT])
 	col[j+n] *= output->dConvert[OUT_SECDEDT];
       else
-	col[j+n] *= dTimeUnit(param->iUnitTime,io->exit_units)/dLengthUnit(param->iUnitLength,io->exit_units);
+	col[j+n] *= dTimeUnit(param->iUnitTime,io->exit_units);
       ncol++;
     }
     

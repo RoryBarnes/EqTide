@@ -1,14 +1,21 @@
-#define MEARTH        5.9742e27
-#define MSUN          1.98892e33
+//#define MEARTH        5.9742e27
+#define MEARTH        5.972186e27 // Prsa et al. 2016   
+//#define MSUN          1.98892e33
+#define MSUN          1.988416e33 // Prsa et al. 2016
 #define AUCM          1.49598e13
-#define RSUN          6.955e10
+//#define RSUN          6.955e10
+#define RSUN          6.957e10     // Prsa et al. 2016
 #define YEARSEC       3.15576e7
 #define DAYSEC        86400
-#define REARTH        6.3781e8
-#define RJUP          7.1492e9
-#define MJUP          1.8987e30
+//#define REARTH        6.3781e8
+#define REARTH        6.3781e8    // Equatorial; Prsa et al. 2016
+//#define RJUP          7.1492e9
+#define RJUP          7.1492e9    // Equatorial; Prsa et al. 2016
+//#define MJUP          1.8987e30
+#define MJUP          1.898130e30 // Prsa et al. 2016
 
-#define BIGG          6.672e-8
+//#define BIGG          6.672e-8
+#define BIGG          6.67428e-8  // From Luzum et al., 2011; value recommended by IAU NSFA in Prsa et al. 2016
 #define PI            3.1415926535
 
 #define RNEP          2.4764e9
@@ -33,6 +40,13 @@
 
 #define NUMOUT        1000       /* Number of output parameters */
 #define NUMOPT	      1000
+
+/* EPS is the floor for which two numbers are deemed to be unequal. If the
+difference between two numbers is < EPS, then they are assumed to be the same.
+This is particularly important for tidally locked body for which round-off 
+errors can cause the difference of the mean motion and rotational frequency 
+to be non-zero. */ 
+#define EPS           1e-10
 
 #define TINY          (1./HUGE)
 

@@ -397,7 +397,7 @@ double DOrbPerDt(double dMass,double dSemi,double dDaDt) {
 int iSign(double dArg) {
   int iVal;
 
-  if (dArg != 0) 
+  if (fabs(dArg) > EPS) 
     iVal = (int)(dArg/fabs(dArg));
   else 
     iVal = 0;
