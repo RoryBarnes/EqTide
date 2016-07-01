@@ -15,6 +15,8 @@
  *
  */
 
+/* UGH! This should really be done with enum! */
+
 #define OUT_AGE			10
 
 #define OUT_ORBANGMOM		100

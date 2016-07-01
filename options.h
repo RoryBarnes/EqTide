@@ -18,6 +18,8 @@
  *
  */
 
+/* UGH! This should really be done with enum! */
+
 #define OPT_AGE			10
 
 #define OPT_BACK		12
