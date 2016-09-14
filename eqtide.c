@@ -181,7 +181,7 @@ double dTideHeatEq_CPL2(double z,double dEcc,double dPsi,double dN,int bDiscrete
   double gorb,grot,om;
   int *epsilon;
 
-  epsilon = malloc(9*sizeof(int));
+  epsilon = malloc(10*sizeof(int));
 
   /* Must reset spin rate in order to get the phase lags correctly */
   om = EqSpinRate_CPL2(dN,dEcc,dPsi,bDiscrete);
@@ -190,6 +190,8 @@ double dTideHeatEq_CPL2(double z,double dEcc,double dPsi,double dN,int bDiscrete
   
   grot = dGammaRot(dEcc,dPsi,epsilon);
   gorb = dGammaOrb(dEcc,dPsi,epsilon);
+
+  free(epsilon);
 
   /* return z/8 * ((om/dN)*grot - gorb); */
   return z/8 * ((1+9.5*dEcc*dEcc)*grot - gorb);
@@ -730,8 +732,8 @@ void Backward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *fil
 
   /* CPL Auxiliary variables */
   epsilon=malloc(2*sizeof(int*));
-  epsilon[0]=malloc(9*sizeof(int));
-  epsilon[1]=malloc(9*sizeof(int));
+  epsilon[0]=malloc(10*sizeof(int));
+  epsilon[1]=malloc(10*sizeof(int));
 
   /* CTL Auxiliary variables */
   f = malloc(5*sizeof(double));
@@ -799,8 +801,8 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
 
   // CPL Auxiliary variables
   epsilon=malloc(2*sizeof(double*));
-  epsilon[0]=malloc(9*sizeof(double));
-  epsilon[1]=malloc(9*sizeof(double));
+  epsilon[0]=malloc(10*sizeof(double));
+  epsilon[1]=malloc(10*sizeof(double));
 
   // CTL Auxiliary variables
   f=malloc(5*sizeof(double));

@@ -21,6 +21,7 @@ void InitializeOutput(OUTPUT *output) {
   int i;
   
   for (i=0;i<NUMOUT;i++) {
+    output->cParam[i] = InitializeString(OPTLEN);
     sprintf(output->cParam[i],"null");
     output->iNeg[i] = 0;
     output->dConvert[i] = 1;
@@ -390,7 +391,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   int i,j,k,foo; // foo is a placehold for EqSpinRate_CTL8
   FILE *fp;
   double tmp;
-  char cTime[16],cTmp[24];
+  char cTime[16],cTmp[OPTLEN];
   double chi[2],dTideHeat[2],dTideSurfFlux[2];
   double dEqHeatFlux[2],dEqSpinRate[2];
   double z[2],f[5],dBeta; // CTL parameters
@@ -608,18 +609,16 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
       fprintf(fp,"Primary Tidal Q: ");
       fprintd(fp,pri.dQ,io.iSciNot,io.iDigits);
       fprintf(fp,"\n");
-      if (pri.bDoQPrime) {
-	fprintf(fp,"Use Q': Yes\n");
-      } else {
-	fprintf(fp,"Primary Love Number k2: ");
-	fprintd(fp,pri.dK2,io.iSciNot,io.iDigits);
-      }
-    }
-    if (param.iTideModel == CTL) {
+    } else if (param.iTideModel == CTL) {
       fprintf(fp,"Primary Time Lag: ");
       fprintd(fp,pri.dTau/dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
     }
     fprintf(fp,"\n");
+
+    fprintf(fp,"Primary Love Number k2: ");
+    fprintd(fp,pri.dK2,io.iSciNot,io.iDigits);
+    fprintf(fp,"\n");
+
   } /* iEnd */
 
   fprintf(fp,"Primary %s Obliquity: ",cTime);
@@ -673,21 +672,16 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
       fprintf(fp,"Secondary Tidal Q: ");
       fprintd(fp,sec.dQ,io.iSciNot,io.iDigits);
       fprintf(fp,"\n");
-
-      if (sec.bDoQPrime) {
-	fprintf(fp,"Use Q': Yes\n");
-      } else {
-	fprintf(fp,"Secondary Love Number k2: ");
-	fprintd(fp,sec.dK2,io.iSciNot,io.iDigits);
-	fprintf(fp,"\n");
-      }
-    }
-    if (param.iTideModel == CTL) {
+    } else if (param.iTideModel == CTL) {
       fprintf(fp,"Secondary Time Lag: ");
       fprintd(fp,sec.dTau/dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
       fprintf(fp,"\n");
     }
 
+    fprintf(fp,"Secondary Love Number k2: ");
+    fprintd(fp,sec.dK2,io.iSciNot,io.iDigits);
+    fprintf(fp,"\n");
+    
     fprintf(fp,"Secondary Radius of Gyration: ");
     fprintd(fp,sec.dRG,io.iSciNot,io.iDigits);
     fprintf(fp,"\n");
@@ -881,11 +875,20 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   fprintf(fp,"\n----------- Halt ---------\n\n");
 
   /* Minimum Obliquity */
-  fprintf(fp,"Minimum Obliquity: ");
+  fprintf(fp,"Primary's Minimum Obliquity: ");
   if (param.iUnitAngle == 0) {
-    tmp=param.dMinObliquity;
+    tmp=param.halt.dMinPriObl;
   } else {
-    tmp=param.dMinObliquity/dAngleUnit(param.iUnitAngle,io.exit_units);
+    tmp=param.halt.dMinPriObl/dAngleUnit(param.iUnitAngle,io.exit_units);
+  }
+  fprintd(fp,tmp,io.iSciNot,io.iDigits);
+  fprintf(fp,"\n");
+
+  fprintf(fp,"Secondary's Minimum Obliquity: ");
+  if (param.iUnitAngle == 0) {
+    tmp=param.halt.dMinSecObl;
+  } else {
+    tmp=param.halt.dMinSecObl/dAngleUnit(param.iUnitAngle,io.exit_units);
   }
   fprintd(fp,tmp,io.iSciNot,io.iDigits);
   fprintf(fp,"\n");
@@ -905,8 +908,8 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
   ncol=0;
   
   epsilon=malloc(2*sizeof(int*));
-  epsilon[0]=malloc(9*sizeof(int));
-  epsilon[1]=malloc(9*sizeof(int));
+  epsilon[0]=malloc(10*sizeof(int));
+  epsilon[1]=malloc(10*sizeof(int));
   
   z=malloc(2*sizeof(double));
   chi=malloc(2*sizeof(double));

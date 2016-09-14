@@ -26,11 +26,14 @@ void ExitMultipleOptions(char infile[],char name[],int line1,int line2,int iExit
 
 void AddOptionBool(char infile[], char name[], int *param, int *nline, int iExit,int iVerbose) {
   FILE *fp;
-  char line[256],word[24],cTmp[24];
+  char line[256],*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
 
+  word = InitializeString(OPTLEN);
+  cTmp = InitializeString(OPTLEN);
+  
   fp=fopen(infile,"r");
   if (fp == NULL) {
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
@@ -62,15 +65,22 @@ void AddOptionBool(char infile[], char name[], int *param, int *nline, int iExit
       LineExit(infile,*nline,iExit,iVerbose);
     }
   }
+
+  free(word);
+  free(cTmp);
+
 }
 
 void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit) {
   FILE *fp;
-  char line[256],word[24],cTmp[24];
+  char line[256],*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
 
+  word = InitializeString(OPTLEN);
+  cTmp = InitializeString(OPTLEN);
+  
   fp=fopen(infile,"r");
   if (fp == NULL) {
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
@@ -94,14 +104,21 @@ void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit)
     }
     n++;
   }
+
+  free(word);
+  free(cTmp);
+
 }
 
 void AddOptionDouble(char infile[], char name[], double *param,int *nline, int iExit) {
   FILE *fp;
-  char line[256],word[24],cTmp[24];
+  char line[256],*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
+
+  word = InitializeString(OPTLEN);
+  cTmp = InitializeString(OPTLEN);
 
   fp=fopen(infile,"r");
   if (fp == NULL) {
@@ -126,15 +143,21 @@ void AddOptionDouble(char infile[], char name[], double *param,int *nline, int i
     }
     n++;
   }
+  free(word);
+  free(cTmp);
+
 }
 
 void AddOptionString(char infile[], char name[],char *param, int *nline, int iExit) {
   FILE *fp;
-  char line[256],word[24],cTmp[24];
+  char line[256],*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
 
+  word = InitializeString(OPTLEN);
+  cTmp = InitializeString(OPTLEN);
+  
   fp=fopen(infile,"r");
   if (fp == NULL) {
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
@@ -157,13 +180,18 @@ void AddOptionString(char infile[], char name[],char *param, int *nline, int iEx
     }
     n++;
   }
+
+  free(word);
+  free(cTmp);
 }
 
 int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
-  char line[256],word[24];
+  char line[256],*word;
   int i,j,istart,ok,done=0,n=0,num;
   FILE *fp;
 
+  word = InitializeString(OPTLEN);
+  
   fp=fopen(infile,"r");
   if (fp == NULL) {
     fprintf(stderr,"Unable to open %s.\n",infile);
@@ -207,15 +235,28 @@ int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
   }
   /* Lose the input parameter */
   num--;
+
+  free(word);
+
   return num;
 }
 
-int AddOutputOrder(char infile[], char name[], int iLen,char param[NUMOUT][24],int *nline,OUTPUT *output,int iVerbose,int iExit) {
+int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int *nline,OUTPUT *output,int iVerbose,int iExit) {
   FILE *fp;
-  char line[256],word[24],cTmp[24],opt[NUMOUT][24],input[NUMOUT][24],base[NUMOUT][24],out[NUMOUT][24];
+  char line[256],*word,*cTmp,*opt[NUMOUT],*input[NUMOUT],*base,*out[NUMOUT];
   int i=0,count=0,n=0,istart=0,j=0,nl=0,k=0,bNeg=0,iOut=0;
   int foo;
 
+  word = InitializeString(OPTLEN);
+  cTmp = InitializeString(OPTLEN);
+
+  for (i=0;i<NUMOUT;i++) {
+      opt[i] = InitializeString(OPTLEN);
+      input[i] = InitializeString(OPTLEN);
+      out[i] = InitializeString(OPTLEN);
+      param[i] = InitializeString(OPTLEN);
+  }
+  
   fp=fopen(infile,"r");
   if (fp == NULL) {
     fprintf(stderr,"Unable to open %s.\n",infile);
@@ -229,14 +270,15 @@ int AddOutputOrder(char infile[], char name[], int iLen,char param[NUMOUT][24],i
      word = string to search for option in input file
      name = name of option in input file
      input[n] = Verbatim string from input stream
-     base[n] = Dummy copy of input, to allow for capitalization manipulation
+     base = Dummy copy of input, to allow for capitalization manipulation
      output.cParam = Output option string
      cTmp = Dummy copy of output.cParam, to allow for capitalization manipulation
      opt = array of possible output options
-     param = Output option with capitalization
+     param = Output option with capitalization (&param->cOutputOrder)
      out = Dummy of param
      bNeg = Negative sign in front of option?
      iOut = ID of output struct that matches an output parameter
+     istart = index of line at end of last parameter
   */
 
   while(fgets(line,256,fp) != NULL) {
@@ -251,49 +293,51 @@ int AddOutputOrder(char infile[], char name[], int iLen,char param[NUMOUT][24],i
         n=0;
         *nline=nl;
         istart=0;
-        for (i=0;i<256;i++) {
+
+	base = InitializeString(OPTLEN);
+
+	// Read in output parameters, one character at a time
+	for (i=0;i<256;i++) {
           /* printf("%d ",line[i]); */ 
+	  /* If this character is not white space, #, or the last line, 
+	     then read in the character
+	  */
           if (isspace(line[i]) || line[i] == 35 || i == strlen(line)-1 ) {
-            for (j=0;j<24;j++) 
-              input[n][j] = 0;
-            
+
             for (j=0;j<(i-istart);j++) {
               /* printf("%d ",line[istart+j]); */
+	      // Check if the first character is a negative sign
 	      if (line[istart+j] == 45) {
+		/* XXX Better as:
+		if (j == 0 && line[istart] == 45) {  ?
+		*/
 		bNeg = 1;
+		// Place characters in string one at a time
 	      } else if (!iscntrl(line[istart+j]) && line[istart+j] != 35) 
                 /* if (line[istart+j] != 10) */ 
                 input[n][j-bNeg] = line[istart+j];
             }
-	    /* Don't include name of parameter, e.g. OutputOrder */
-            if (memcmp(input[n],name,iLen)) {
-	      /* Dump string into buffer. This is to maintain
+
+	    /* Dump string into buffer. This is to maintain
 		 capitalization in original input. */
-	      for (k=0;k<24;k++) 
-		base[n][k]=0;
-	      for (k=0;k<24;k++) 
-		base[n][k]=input[n][k];
-	      
-	      /* First check redundancy */
-	      for (k=0;k<n;k++) {
-		if (memcmp(lower(base[n]),lower(out[k]),(i-istart)) == 0) {
-		  /* Match */
-		  if (iVerbose >= VERBERR)
-		    fprintf(stderr,"ERROR: Same option listed multiple times in %s: %s.\n",name,param[k]);
-		  LineExit(infile,nl,iExit,iVerbose);
-		}
-	      }
-	      
+	    for (k=0;k<OPTLEN;k++) 
+	      base[k]=input[n][k];
+
+	    /* Don't include name of parameter, e.g. OutputOrder */
+            if (memcmp(input[n],name,iLen)) { // returns 0 if the two strings match
 	      /* Check for ambiguity */ 
               count=0; /* How many possibilities? */
               for (j=0;j<NUMOUT;j++) {
-                for (k=0;k<24;k++)
+                for (k=0;k<OPTLEN;k++)
 		  /* Maintain capitalization in output.cParam */
                   cTmp[k]=output->cParam[j][k];
 		
-                if (memcmp(lower(base[n]),lower(cTmp),(i-istart)) == 0) {
+		//printf("%d %s %s %d %d\n",n,base,cTmp,i,istart);
+		//fflush(stdout);
+                //if (memcmp(lower(base),lower(cTmp),(i-istart)) == 0) {
+                if (memcmp(lower(base),lower(cTmp),strlen(base)) == 0) {
 		  /* Valid output option found */
-		  for (k=0;k<24;k++) 
+		  for (k=0;k<OPTLEN;k++) 
 		    opt[count][k]=output->cParam[j][k];
 		  count++;
 		  iOut=j;
@@ -320,7 +364,8 @@ int AddOutputOrder(char infile[], char name[], int iLen,char param[NUMOUT][24],i
               }
 	      if (count == 1) {
 		/* Unique option */
-		for (k=0;k<24;k++) {
+		param[n-1] = InitializeString(OPTLEN);
+		for (k=0;k<OPTLEN;k++) {
 		  /* n-1 because n=0 is name */
 		  param[n-1][k]=opt[0][k];
 		  out[n-1][k]=param[n-1][k];
@@ -330,7 +375,8 @@ int AddOutputOrder(char infile[], char name[], int iLen,char param[NUMOUT][24],i
 		  fprintf(stderr,"WARNING: Output option %s is negative, output units will be %s\n",param[n-1],output->cNeg[iOut]);
 		bNeg=0;
               } 	
-            }
+	    } 
+	    
             while (isspace(line[i])) i++;
             istart=i;
 	    n++; /*?*/
@@ -340,6 +386,30 @@ int AddOutputOrder(char infile[], char name[], int iLen,char param[NUMOUT][24],i
     }
     for (j=0;j<256;j++) line[j]=0;
     nl++;
+  }
+
+  /* First check redundancy */
+  for (i=1;i<n;i++) { // n-1 because n=0 is Option name
+    for (k=0;k<i;k++) { // n-1 because n=0 is Option name
+      //printf("%d %d %s %s\n",i,k,param[i],param[k]);
+      //fflush(stdout);
+      //if (memcmp(param[i],param[k],strlen(param[i]-1)) == 0) { 
+      if (strcmp(param[i],param[k]) == 0) { 
+	/* Match */
+	if (iVerbose >= VERBERR)
+	  fprintf(stderr,"ERROR: Same option listed multiple times in %s: %s.\n",name,param[k]);
+	LineExit(infile,nl,iExit,iVerbose);
+      }
+    } 
+  }
+
+  // Release memory mallocked in InitializeString
+  free(word);
+  free(cTmp);
+  for (i=0;i<NUMOUT;i++) {
+    free(opt[i]);
+    free(input[i]);
+    free(out[i]);
   }
   
   // Return number of output columns. If no output requested, returns -1
@@ -1690,7 +1760,7 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
 	LineExit(infile,nline,io->exit_param,io->iVerbose);
       } 
       /* Change to radians */
-      param->dMinObliquity *= DEGRAD;
+      param->halt.dMinPriObl *= DEGRAD;
     }
   }
   if (param->halt.dMinPriObl > 0)
@@ -1715,7 +1785,7 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
 	LineExit(infile,nline,io->exit_param,io->iVerbose);
       } 
       /* Change to radians */
-      param->dMinObliquity *= DEGRAD;
+      param->halt.dMinSecObl *= DEGRAD;
     }
   }
   if (param->halt.dMinSecObl > 0)

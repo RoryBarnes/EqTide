@@ -17,16 +17,16 @@
 #include "eqtide.h"
 #include "options.h"
 
-void InitializeIO(IO *io) {
-  io->exit_param = EXIT_PARAM;
-  io->exit_units = EXIT_UNITS;
-  io->exit_exe = EXIT_EXE;
-  io->exit_output = EXIT_OUTPUT;
-}
+char *InitializeString(int iLen) {
+  int i;
+  char *str,cTmp[iLen];
+  
+  str=malloc(iLen*sizeof(char));
+  
+  for (i=0;i<iLen;i++)
+    str[i]=0;
 
-void LineExit(char infile[],int nline, int iExit, int iVerbose) {
-  fprintf(stderr,"\t%s: Line %d\n",infile,nline+1);
-  exit(iExit);
+  return str;
 }
 
 char *lower(char str[]) {
@@ -114,6 +114,18 @@ void fprintd(FILE *fp,double x,int iExp,int iDig) {
     if (iDig == 16) 
       fprintf(fp,"%.16lf",x);
   }
+}
+
+void InitializeIO(IO *io) {
+  io->exit_param = EXIT_PARAM;
+  io->exit_units = EXIT_UNITS;
+  io->exit_exe = EXIT_EXE;
+  io->exit_output = EXIT_OUTPUT;
+}
+
+void LineExit(char infile[],int nline, int iExit, int iVerbose) {
+  fprintf(stderr,"\t%s: Line %d\n",infile,nline+1);
+  exit(iExit);
 }
 
 /* Return proper length conversion */

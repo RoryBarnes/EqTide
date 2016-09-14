@@ -59,6 +59,7 @@
 #define VERBUNITS     4
 #define VERBALL       5
 
+#define OPTLEN        24
 #define NUMOUT        1000       /* Number of output parameters */
 #define NUMOPT	      1000
 
@@ -91,7 +92,6 @@ typedef struct {
   double dRG;           /**< Radius of Gyration */
   double *iEpsilon;     /**< Signs of phase lags */
 
-  int bDoQPrime;	/**< Read in Q' instead of Q (and ignore k2)? */
   int bForceEqSpin;     /**< Force spin rate to be equilibrium? */
   double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
@@ -115,7 +115,6 @@ typedef struct {
   double dRG;           /**< Radius of Gyration */
   double dSyncEcc;      /**< Synchronous rotation below this e */
 
-  int bDoQPrime;	/**< Read in Q' instead of Q (and ignore k2)? */
   int bForceEqSpin;     /**< Tidally lock planet? */
   double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
@@ -188,7 +187,7 @@ typedef struct {
   double l0;            /**< Initial angular momentum */
   double dl;            /**< Change in angular momentum: (l-l0)/l0 */
  
-  char cOutputOrder[NUMOUT][24]; /**< Output order */
+  char *cOutputOrder[NUMOUT]; /**< Output order */
   int iNumCols;         /**< Number if columns in output file */
 
   double dMinValue;     /**< Minimum value for e and obl */
@@ -208,8 +207,6 @@ typedef struct {
   int bVarDt;                   /**< Use variable timestep? */
   double dTimestepCoeff;        /**< Variable Timestep coefficients */
 
-  double dMinObliquity;         /**< When Obliquity reaches this value, it is forced to 0 */
-
   int iIntegration;             /**< Integration method */
   fvDerivs fDerivs;             /**< Function pointer to derivatives */
   fdEqSpin fEqSpin;             /**< Function pointer to equilibrium spin rate */
@@ -228,21 +225,24 @@ typedef struct {
 } FILES;
 
 typedef struct {
-  char cParam[NUMOPT][24];   /**< Option name */
+  char cParam[NUMOPT][OPTLEN];   /**< Option name */
   char cDescr[NUMOPT][256];  /**< Option description */
   int iType[NUMOPT];         /**< Option type (cast) */
-  char cDefault[NUMOPT][24]; /**< Default value */
+  char cDefault[NUMOPT][OPTLEN]; /**< Default value */
 } OPTIONS;
 
 typedef struct {
-  char cParam[NUMOUT][24];   /**< Output parameter name */
+  char *cParam[NUMOUT];   /**< Output parameter name */
   char cDescr[NUMOUT][256];  /**< Output descripton */
   int iNeg[NUMOUT];          /**< Was option negative? (Sets units) */
-  char cNeg[NUMOUT][24];     /**< String description of output units */
+  char cNeg[NUMOUT][OPTLEN];     /**< String description of output units */
   double dConvert[NUMOUT];   /**< Conversion value for negative output */
 } OUTPUT;
 
+// String/print utilities
+char *lower(char[]);
 void fprintd(FILE*,double,int,int);
+char *InitializeString();
 
 /* Mass-Radius relations */
 double dBaylessOrosz06_MassRad(double); 
@@ -326,7 +326,6 @@ double dRotEn(double,double,double,double);
 double dOrbEn(double,double,double);
 
 void LineExit(char[],int, int, int);
-char *lower(char[]);
 int iSign(double);
 double dDPerDt(double,double);
 
