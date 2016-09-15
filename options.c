@@ -26,20 +26,21 @@ void ExitMultipleOptions(char infile[],char name[],int line1,int line2,int iExit
 
 void AddOptionBool(char infile[], char name[], int *param, int *nline, int iExit,int iVerbose) {
   FILE *fp;
-  char line[256],*word,*cTmp;
+  char *line,*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
 
   word = InitializeString(OPTLEN);
   cTmp = InitializeString(OPTLEN);
+  line = InitializeString(LINELEN);
   
   fp=fopen(infile,"r");
   if (fp == NULL) {
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
-  while(fgets(line,256,fp) != NULL) {
+  while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
       /* Check for desired parameter */
@@ -68,12 +69,12 @@ void AddOptionBool(char infile[], char name[], int *param, int *nline, int iExit
 
   free(word);
   free(cTmp);
-
+  free(line);
 }
 
 void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit) {
   FILE *fp;
-  char line[256],*word,*cTmp;
+  char line[LINELEN],*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
@@ -86,7 +87,7 @@ void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit)
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
-  while(fgets(line,256,fp) != NULL) {
+  while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
       /* Check for desired parameter */
@@ -112,7 +113,7 @@ void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit)
 
 void AddOptionDouble(char infile[], char name[], double *param,int *nline, int iExit) {
   FILE *fp;
-  char line[256],*word,*cTmp;
+  char line[LINELEN],*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
@@ -125,7 +126,7 @@ void AddOptionDouble(char infile[], char name[], double *param,int *nline, int i
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
-  while(fgets(line,256,fp) != NULL) {
+  while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
       /* Check for desired parameter */
@@ -150,7 +151,7 @@ void AddOptionDouble(char infile[], char name[], double *param,int *nline, int i
 
 void AddOptionString(char infile[], char name[],char *param, int *nline, int iExit) {
   FILE *fp;
-  char line[256],*word,*cTmp;
+  char line[LINELEN],*word,*cTmp;
   int n=0,done=0,iLen;
   
   iLen=strlen(name);
@@ -163,7 +164,7 @@ void AddOptionString(char infile[], char name[],char *param, int *nline, int iEx
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
-  while(fgets(line,256,fp) != NULL) {
+  while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
       /* Check for desired parameter */
@@ -186,7 +187,7 @@ void AddOptionString(char infile[], char name[],char *param, int *nline, int iEx
 }
 
 int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
-  char line[256],*word;
+  char line[LINELEN],*word;
   int i,j,istart,ok,done=0,n=0,num;
   FILE *fp;
 
@@ -197,7 +198,7 @@ int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
     fprintf(stderr,"Unable to open %s.\n",infile);
     exit(iExit);
   }
-  while(fgets(line,256,fp) != NULL) {
+  while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
       /* Check for desired parameter */
@@ -215,7 +216,7 @@ int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
 	num=0;
 	istart=0;
 	ok=1;
-	for (i=1;i<256;i++) { /* Ignore first character, as it makes conditional well-defined */
+	for (i=1;i<LINELEN;i++) { /* Ignore first character, as it makes conditional well-defined */
 	  /* printf("%d ",line[i]); */ 
 	  if (ok) {
 	    if (line[i] == 35) {
@@ -230,7 +231,7 @@ int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
       }
     }
     n++;
-    for (i=0;i<256;i++) 
+    for (i=0;i<LINELEN;i++) 
       line[i]=0;
   }
   /* Lose the input parameter */
@@ -243,7 +244,7 @@ int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
 
 int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int *nline,OUTPUT *output,int iVerbose,int iExit) {
   FILE *fp;
-  char line[256],*word,*cTmp,*opt[NUMOUT],*input[NUMOUT],*base,*out[NUMOUT];
+  char line[LINELEN],*word,*cTmp,*opt[NUMOUT],*input[NUMOUT],*base,*out[NUMOUT];
   int i=0,count=0,n=0,istart=0,j=0,nl=0,k=0,bNeg=0,iOut=0;
   int foo;
 
@@ -281,7 +282,7 @@ int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int 
      istart = index of line at end of last parameter
   */
 
-  while(fgets(line,256,fp) != NULL) {
+  while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     foo = strlen(line);
     if (memcmp(line,"#",1) != 0) {
@@ -297,7 +298,7 @@ int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int 
 	base = InitializeString(OPTLEN);
 
 	// Read in output parameters, one character at a time
-	for (i=0;i<256;i++) {
+	for (i=0;i<LINELEN;i++) {
           /* printf("%d ",line[i]); */ 
 	  /* If this character is not white space, #, or the last line, 
 	     then read in the character
@@ -384,7 +385,7 @@ int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int 
         }
       }
     }
-    for (j=0;j<256;j++) line[j]=0;
+    for (j=0;j<LINELEN;j++) line[j]=0;
     nl++;
   }
 
@@ -419,14 +420,14 @@ int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int 
 int iGetNumLines(char infile[],int iExit) {
   int n=0;
   FILE *fp;
-  char line[256];
+  char line[LINELEN];
 
   fp=fopen(infile,"r");
   if (fp == NULL) {
     fprintf(stderr,"Unable to open %s.\n",infile);
     exit(iExit);
   }
-  while(fgets(line,256,fp) != NULL) {
+  while(fgets(line,LINELEN,fp) != NULL) {
     n++;
   }
   return n;
@@ -435,7 +436,7 @@ int iGetNumLines(char infile[],int iExit) {
 void InitializeInput(char infile[],int iNumLines,int iLineOK[],int iExit) {
   int n,i,bad;
   FILE *fp;
-  char line[256];
+  char line[LINELEN];
 
   fp=fopen(infile,"r");
   if (fp == NULL) {
@@ -447,15 +448,15 @@ void InitializeInput(char infile[],int iNumLines,int iLineOK[],int iExit) {
     /* Initialize iLineOK */
     iLineOK[n] = 0;
     
-    for (i=0;i<256;i++) line[i]=32;
-    fgets(line,256,fp);
+    for (i=0;i<LINELEN;i++) line[i]=32;
+    fgets(line,LINELEN,fp);
     /* Check for # sign or blank line */
     if (!memcmp(line,"#",1)) {
       /* Line is OK */
       iLineOK[n] = 1;
     } else {
       bad=0;
-      for (i=0;i<256;i++) {
+      for (i=0;i<LINELEN;i++) {
 	if (!isspace(line[i]) && line[i] != '\0') {
 	  bad=1;	
 	}
@@ -923,14 +924,14 @@ void InitializeOptions(OPTIONS *options) {
 
 void Unrecognized(char infile[],int iNumLines,int *iLineOK,int iExit) {
   FILE *fp;
-  char line[256],word[16];
+  char line[LINELEN],word[16];
    /* foo is a placeholder for calls to EqSpinRate_CTL */
   int i,iBad=0,foo; /* Assume don't exit */
 
   fp=fopen(infile,"r");
 
   for (i=0;i<iNumLines;i++) {
-    fgets(line,256,fp);	  
+    fgets(line,LINELEN,fp);	  
     if (!iLineOK[i]) {
       /* Bad line */
       sscanf(line,"%s",word);	

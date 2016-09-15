@@ -300,8 +300,11 @@ double dDaDt_CTL8(PRIMARY *pri,SECONDARY *sec,double *z,double beta,double *f) {
 
 double dDeDt_CTL8(PRIMARY *pri,SECONDARY *sec,double *z,double beta,double *f) {
   int i;
-  double psi[2],omega[2],sum;
+  double *psi,*omega,sum;
 
+  psi = malloc(2*sizeof(double));
+  omega = malloc(2*sizeof(double));
+  
   psi[0]=pri->dObliquity;
   psi[1]=sec->dObliquity;
   omega[0]=pri->dSpinRate;
@@ -310,6 +313,9 @@ double dDeDt_CTL8(PRIMARY *pri,SECONDARY *sec,double *z,double beta,double *f) {
   sum=0;
   for (i=0;i<2;i++) 
     sum += z[i]*(cos(psi[i])*f[3]*omega[i]/(pow(beta,10)*sec->dMeanMotion) - 18*f[2]/(11*pow(beta,13)));
+
+  free(psi);
+  free(omega);
   
   return 11*sec->dSemi*sec->dEcc/(2*BIGG*pri->dMass*sec->dMass)*sum;
 }
@@ -785,6 +791,8 @@ void Backward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *fil
       dTimeOut = NextOutput(dTime,param->dBackOutputTime);
     }
   }
+
+  free(f);
   free(epsilon);
   free(chi);
   free(z);

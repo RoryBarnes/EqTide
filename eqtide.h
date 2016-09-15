@@ -60,6 +60,7 @@
 #define VERBALL       5
 
 #define OPTLEN        24
+#define LINELEN       256
 #define NUMOUT        1000       /* Number of output parameters */
 #define NUMOPT	      1000
 
@@ -226,14 +227,14 @@ typedef struct {
 
 typedef struct {
   char cParam[NUMOPT][OPTLEN];   /**< Option name */
-  char cDescr[NUMOPT][256];  /**< Option description */
+  char cDescr[NUMOPT][LINELEN];  /**< Option description */
   int iType[NUMOPT];         /**< Option type (cast) */
   char cDefault[NUMOPT][OPTLEN]; /**< Default value */
 } OPTIONS;
 
 typedef struct {
   char *cParam[NUMOUT];   /**< Output parameter name */
-  char cDescr[NUMOUT][256];  /**< Output descripton */
+  char cDescr[NUMOUT][LINELEN];  /**< Output descripton */
   int iNeg[NUMOUT];          /**< Was option negative? (Sets units) */
   char cNeg[NUMOUT][OPTLEN];     /**< String description of output units */
   double dConvert[NUMOUT];   /**< Conversion value for negative output */
