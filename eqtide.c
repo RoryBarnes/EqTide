@@ -748,7 +748,8 @@ void Backward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *fil
   z=malloc(2*sizeof(double));
   chi=malloc(2*sizeof(double));
 
-  fp=fopen(files->cBack,"w");
+  if (param->iNumCols > 0)
+    fp=fopen(files->cBack,"w");
   dTime = 0;
   dDt = param->dBackTimeStep;
   dTimeOut = param->dBackOutputTime;
@@ -819,7 +820,8 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
   z=malloc(2*sizeof(double));
   chi=malloc(2*sizeof(double));
 
-  fp=fopen(files->cFor,"w");
+  if (param->iNumCols > 0)
+    fp=fopen(files->cFor,"w");
   dTime = 0;
   dTimeOut = param->dForwOutputTime;
   dDt = param->dForwTimeStep;

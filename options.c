@@ -40,6 +40,7 @@ void AddOptionBool(char infile[], char name[], int *param, int *nline, int iExit
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
+  // Memory leak -- if EOF reached, line is set to NULL and cannot be freed
   while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
@@ -70,6 +71,7 @@ void AddOptionBool(char infile[], char name[], int *param, int *nline, int iExit
   free(word);
   free(cTmp);
   free(line);
+  fclose(fp);
 }
 
 void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit) {
@@ -87,6 +89,7 @@ void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit)
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
+  // Memory leak -- if EOF reached, line is set to NULL and cannot be freed
   while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
@@ -108,7 +111,7 @@ void AddOptionInt(char infile[], char name[], int *param, int *nline, int iExit)
 
   free(word);
   free(cTmp);
-
+  fclose(fp);
 }
 
 void AddOptionDouble(char infile[], char name[], double *param,int *nline, int iExit) {
@@ -126,6 +129,7 @@ void AddOptionDouble(char infile[], char name[], double *param,int *nline, int i
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
+  // Memory leak -- if EOF reached, line is set to NULL and cannot be freed
   while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
@@ -146,7 +150,7 @@ void AddOptionDouble(char infile[], char name[], double *param,int *nline, int i
   }
   free(word);
   free(cTmp);
-
+  fclose(fp);
 }
 
 void AddOptionString(char infile[], char name[],char *param, int *nline, int iExit) {
@@ -164,6 +168,7 @@ void AddOptionString(char infile[], char name[],char *param, int *nline, int iEx
     fprintf(stderr,"ERROR: Unable to open %s.\n",infile);
     exit(iExit);
   }
+  // Memory leak -- if EOF reached, line is set to NULL and cannot be freed
   while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     if (memcmp(line,"#",1) != 0) {
@@ -184,6 +189,7 @@ void AddOptionString(char infile[], char name[],char *param, int *nline, int iEx
 
   free(word);
   free(cTmp);
+  fclose(fp);
 }
 
 int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
@@ -309,9 +315,6 @@ int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int 
               /* printf("%d ",line[istart+j]); */
 	      // Check if the first character is a negative sign
 	      if (line[istart+j] == 45) {
-		/* XXX Better as:
-		if (j == 0 && line[istart] == 45) {  ?
-		*/
 		bNeg = 1;
 		// Place characters in string one at a time
 	      } else if (!iscntrl(line[istart+j]) && line[istart+j] != 35) 

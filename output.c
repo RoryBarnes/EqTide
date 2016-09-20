@@ -392,15 +392,22 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   FILE *fp;
   double tmp;
   char cTime[16],cTmp[OPTLEN];
-  double chi[2],dTideHeat[2],dTideSurfFlux[2];
+  double *chi,*dTideHeat,*dTideSurfFlux;
   double dEqHeatFlux[2],dEqSpinRate[2];
-  double z[2],f[5],dBeta; // CTL parameters
-  double zprime[2];
+  double *z,*f,dBeta; // CTL parameters
+  double *zprime;
   int **epsilon; // CPL parameters
 
   epsilon = malloc(2*sizeof(int*));
   epsilon[0] = malloc(10*sizeof(int));
   epsilon[1] = malloc(10*sizeof(int));
+
+  z = malloc(2*sizeof(double));
+  zprime = malloc(2*sizeof(double));
+  f = malloc(5*sizeof(double));
+  chi = malloc(2*sizeof(double));
+  dTideHeat = malloc(2*sizeof(double));
+  dTideSurfFlux = malloc(2*sizeof(double));
 
   if (iEnd == 0) {
     sprintf(cTime,"Input");
@@ -764,6 +771,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     dEqHeatFlux[1] = dTideHeatEq_CPL2(zprime[1],sec.dEcc,sec.dObliquity,sec.dMeanMotion,param.bDiscreteRot)/(4*PI*sec.dRadius*sec.dRadius)/1e3;
 
   } else if (param.iTideModel == CTL) {
+    dBeta = AssignBeta(sec.dEcc);
     
     DerivsCTL(&pri,&sec,&io,z,chi,f,dBeta,epsilon,0,param.bDiscreteRot);
 
@@ -897,6 +905,12 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     fprintf(fp,"HALT at double synchronous state.\n");
   
   free(epsilon);
+  free(z);
+  free(zprime);
+  free(f);
+  free(chi);
+  free(dTideHeat);
+  free(dTideSurfFlux);
 }
 
 void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,double dTime,double dDt,FILE *fp) {

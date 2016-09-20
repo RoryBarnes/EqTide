@@ -6,8 +6,8 @@
 # Options can appear in any order, 1 per line.
 
 sSystemName		earthmoon	# System Name
-sTideModel		cpl		# Tidal Model (CPL or CTL)
-#sTideModel		ctl		# Tidal Model (CPL or CTL)
+#sTideModel		cpl		# Tidal Model (CPL or CTL)
+sTideModel		ctl		# Tidal Model (CPL or CTL)
 
 # Comments can go anywhere in a line. Blank lines are ignored.
 
