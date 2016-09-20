@@ -244,7 +244,7 @@ int GetNumOut(char infile[],char name[],int iLen,int *nline,int iExit) {
   num--;
 
   free(word);
-
+  fclose(fp);
   return num;
 }
 
@@ -288,6 +288,7 @@ int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int 
      istart = index of line at end of last parameter
   */
 
+  // Memory leak -- if EOF reached, line is set to NULL and can't be freed
   while(fgets(line,LINELEN,fp) != NULL) {
     /* Check for # sign */
     foo = strlen(line);
@@ -415,7 +416,8 @@ int AddOutputOrder(char infile[], char name[], int iLen,char *param[NUMOUT],int 
     free(input[i]);
     free(out[i]);
   }
-  
+
+  fclose(fp);
   // Return number of output columns. If no output requested, returns -1
   return n-1;
 }
@@ -430,6 +432,7 @@ int iGetNumLines(char infile[],int iExit) {
     fprintf(stderr,"Unable to open %s.\n",infile);
     exit(iExit);
   }
+  // Memory leak -- if EOF reached, line is set to NULL and can't be freed
   while(fgets(line,LINELEN,fp) != NULL) {
     n++;
   }

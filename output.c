@@ -904,6 +904,8 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   if (param.halt.bDblSync) 
     fprintf(fp,"HALT at double synchronous state.\n");
   
+  free(epsilon[1]);
+  free(epsilon[0]);
   free(epsilon);
   free(z);
   free(zprime);
@@ -1622,6 +1624,8 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
   fprintf(fp,"\n");
   fflush(fp);
 
+  free(epsilon[0]); 
+  free(epsilon[1]); 
   free(epsilon); 
   free(z);
   free(chi);

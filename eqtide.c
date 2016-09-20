@@ -782,6 +782,12 @@ void Backward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *fil
     if (param->halt.bHalt) {
       if (bCheckHalt(param,pri,sec,io,-dTime)) {
 	Output(param,pri,sec,output,io,-dTime,dDt,fp);
+	free(f);
+	free(epsilon[1]);
+	free(epsilon[0]);
+	free(epsilon);
+	free(chi);
+	free(z);
 	return;
       }
     }
@@ -794,6 +800,8 @@ void Backward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *fil
   }
 
   free(f);
+  free(epsilon[1]);
+  free(epsilon[0]);
   free(epsilon);
   free(chi);
   free(z);
@@ -840,6 +848,11 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
   if (param->halt.bHalt) {
     if (bCheckHalt(param,pri,sec,io,dTime)) {
       Output(param,pri,sec,output,io,dTime,dDt,fp);
+      free(epsilon[1]);
+      free(epsilon[0]);
+      free(epsilon);
+      free(chi);
+      free(z);
       return;
     }
   }
@@ -863,6 +876,11 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
     if (param->halt.bHalt) {
       if (bCheckHalt(param,pri,sec,io,dTime)) {
 	Output(param,pri,sec,output,io,dTime,dDt,fp);
+	free(epsilon[1]);
+	free(epsilon[0]);
+	free(epsilon);
+	free(chi);
+	free(z);
 	return;
       }
     }
@@ -878,6 +896,8 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
     }
   }
 
+  free(epsilon[1]);
+  free(epsilon[0]);
   free(epsilon);
   free(chi);
   free(z);
