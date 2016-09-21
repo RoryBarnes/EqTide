@@ -1,5 +1,5 @@
 EqTide calculates the evolution of 2 bodies experiencing tidal
-evolution according to the "equilibrium tide" framework including the "constant-phase-lag" and "constant-time-lag models." This algorithm is based on models by Ferraz-Mello, S. et al. (2008), CeMDA, 101, 171-201. If you use this software, please cite Barnes, R. (2016), CeMDA, submitted.
+evolution according to the "equilibrium tide" framework's "constant-phase-lag" and "constant-time-lag" models. This algorithm is based on models by Ferraz-Mello, S. et al. (2008), CeMDA, 101, 171-201. If you use this software, please cite Barnes, R. (2016), CeMDA, submitted.
 
 To compile:
 
