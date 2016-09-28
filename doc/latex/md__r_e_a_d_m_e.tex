@@ -1,0 +1,27 @@
+E\+Q\+T\+I\+D\+E calculates the evolution of 2 bodies experiencing tidal evolution according to the \char`\"{}equilibrium tide\char`\"{} framework including the constant-\/phase-\/lag and constant-\/time-\/lag models. This algorithm is based on the model by Ferraz-\/\+Mello, S. et al. (2008), Ce\+M\+D\+A, 101, 171-\/201. If you use this software, please cite Barnes, R. (2016), Ce\+M\+D\+A, submitted.
+
+To compile\+:
+
+\begin{quote}
+make \end{quote}
+
+
+which creates an executable \char`\"{}eqtide\char`\"{}. E\+Q\+T\+I\+D\+E is written in C, and and the default is to compile with optimization.
+
+Two examples are presented in the Examples directory. Earth\+Moon.\+in performs a backward integration of the Earth-\/\+Moon system, reproducing the classic \char`\"{}acceleration problem\char`\"{} of the lunar expansion. Kepler22b.\+in performs a forward integration of the Kepler-\/22 b system. To run either\+:
+
+\begin{quote}
+eqtide file \end{quote}
+
+
+The input file contains a list of options that can be set, as well as output parameters that print to a file during an integration. The example input files provide a guide for the syntax and grammar of E\+Q\+T\+I\+D\+E. The results of these examples should be compared to results in Barnes (2016).
+
+To see the full list of input options and output parameters\+:
+
+\begin{quote}
+eqtide -\/h \end{quote}
+
+
+There are still a few outstanding issues related to input and output, but for the most part the software works and is user-\/friendly. The integration is robust. This software has been tested on the following O\+S platforms\+: Mac O\+S 10.\+11.
+
+This code was developed under the National Science Foundation (U\+S\+A) grant A\+S\+T-\/1110882, as well as N\+A\+S\+A Cooperative Agreement N\+N\+A13\+A\+A93\+A. 

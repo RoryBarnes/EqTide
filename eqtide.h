@@ -76,11 +76,11 @@ to be non-zero. */
   does not contain orbital information. */
 
 typedef struct {
-  double dMass;		/**< Mass of star */
-  double dRadius;	/**< Radius of star */
+  double dMass;		/**< Mass of primary */
+  double dRadius;	/**< Radius of primary */
   double dTau;          /**< Time lag */
-  double dQ;		/**< Tidal Q of star */
-  double dK2;		/**< Love number of star */
+  double dQ;		/**< Tidal Q of primary */
+  double dK2;		/**< Love number of primary */
   double dObliquity;    /**< Obliquity */
   double dSpinRate;     /**< Rotation Rate */
   double dRG;           /**< Radius of Gyration */
@@ -100,16 +100,16 @@ typedef struct {
 
 typedef struct {
   double dMass;		/**< Planetary Mass */
-  double dRadius;	/**< Planetary Radius */
+  double dRadius;	/**< Secondary Radius */
   double dTau;          /**< Time lag */
-  double dQ;		/**< Planetary Tidal Q */
-  double dK2;		/**< Planetary Love number */
+  double dQ;		/**< Secondary Tidal Q */
+  double dK2;		/**< Secondary Love number */
   double dObliquity;    /**< Obliquity */
   double dSpinRate;     /**< Rotation rate */
   double dRG;           /**< Radius of Gyration */
   double dSyncEcc;      /**< Synchronous rotation below this e */
 
-  int bForceEqSpin;     /**< Tidally lock planet? */
+  int bForceEqSpin;     /**< Tidally lock second? */
   double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
   double dSemi;         /**< Semi-major axis */
