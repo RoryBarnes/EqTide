@@ -84,6 +84,7 @@ typedef struct {
   double dObliquity;    /**< Obliquity */
   double dSpinRate;     /**< Rotation Rate */
   double dRG;           /**< Radius of Gyration */
+
   double *iEpsilon;     /**< Signs of phase lags */
 
   int bForceEqSpin;     /**< Force spin rate to be equilibrium? */
