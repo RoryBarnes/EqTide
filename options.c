@@ -931,7 +931,7 @@ void InitializeOptions(OPTIONS *options) {
 void Unrecognized(char infile[],int iNumLines,int *iLineOK,int iExit) {
   FILE *fp;
   char line[LINELEN],word[16];
-   /* foo is a placeholder for calls to EqSpinRate_CTL */
+   /* foo is a placeholder for calls to EqSpinRate_CTL8 */
   int i,iBad=0,foo; /* Assume don't exit */
 
   fp=fopen(infile,"r");
@@ -952,7 +952,7 @@ void Unrecognized(char infile[],int iNumLines,int *iLineOK,int iExit) {
 }
 
 void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS options,LINE line,char infile[],IO *io) {
-   /* foo is a placeholder for calls to EqSpinRate_CTL */
+   /* foo is a placeholder for calls to EqSpinRate_CTL8 */
   int foo;
 
   if (sec->dSemi == 0 && sec->dMeanMotion == 0 && input.dPeriod == 0) {
@@ -1080,9 +1080,9 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
     if (input.dPriVRot != 0) 
       fprintf(stderr,"WARNING: %s and %s set, defaulting to equilibrium value.\n",options.cParam[OPT_PRIFORCEEQSPIN],options.cParam[OPT_PRIVROT]);
 
-    if (param->iTideModel == CPL) {
+    if (param->iTideModel == CPL2) {
       pri->dSpinRate = EqSpinRate_CPL2(sec->dMeanMotion,sec->dEcc,sec->dObliquity,param->bDiscreteRot);
-    } else if (param->iTideModel == CTL) {
+    } else if (param->iTideModel == CTL8) {
       pri->dSpinRate = EqSpinRate_CTL8(sec->dMeanMotion,sec->dEcc,pri->dObliquity,param->bDiscreteRot);
     }
   } else {
@@ -1114,9 +1114,9 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
       if (io->iVerbose > 1)
 	fprintf(stderr,"WARNING: Neither %s, %s nor %s set, assigning equilibrium rotation rate.\n",options.cParam[OPT_PRISPINPER],options.cParam[OPT_PRISPINRATE],options.cParam[OPT_PRIVROT]);
 
-      if (param->iTideModel == CPL) {
+      if (param->iTideModel == CPL2) {
 	pri->dSpinRate=EqSpinRate_CPL2(sec->dMeanMotion,sec->dEcc,pri->dObliquity,param->bDiscreteRot);
-      } else if (param->iTideModel == CTL) {
+      } else if (param->iTideModel == CTL8) {
 	pri->dSpinRate=EqSpinRate_CTL8(sec->dMeanMotion,sec->dEcc,pri->dObliquity,param->bDiscreteRot);
       }
     } else {
@@ -1142,9 +1142,9 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
 	fprintf(stderr,"WARNING: %s and %s set, defaulting to equilibrium value.\n",options.cParam[OPT_SECFORCEEQSPIN],options.cParam[OPT_SECVROT]);
     }
 
-    if (param->iTideModel == CPL) {
+    if (param->iTideModel == CPL2) {
       sec->dSpinRate = EqSpinRate_CPL2(sec->dMeanMotion,sec->dEcc,sec->dObliquity,param->bDiscreteRot);
-    } else if (param->iTideModel == CTL) {
+    } else if (param->iTideModel == CTL8) {
       sec->dSpinRate = EqSpinRate_CTL8(sec->dMeanMotion,sec->dEcc,sec->dObliquity,param->bDiscreteRot);
     }
   } else {
@@ -1176,9 +1176,9 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
       if (io->iVerbose > 1)
 	fprintf(stderr,"WARNING: Neither %s, %s nor %s set, assigning equilibrium rotation rate.\n",options.cParam[OPT_SECSPINPER],options.cParam[OPT_SECSPINRATE],options.cParam[OPT_SECVROT]);
       
-      if (param->iTideModel == CPL) {
+      if (param->iTideModel == CPL2) {
 	pri->dSpinRate=EqSpinRate_CPL2(sec->dMeanMotion,sec->dEcc,pri->dObliquity,param->bDiscreteRot);
-      } else if (param->iTideModel == CTL) {
+      } else if (param->iTideModel == CTL8) {
 	pri->dSpinRate=EqSpinRate_CTL8(sec->dMeanMotion,sec->dEcc,pri->dObliquity,param->bDiscreteRot);
       }
     } else {
@@ -1190,11 +1190,11 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
   }
 
   /* Set model-specific functions */
-  if (param->iTideModel == CPL) {
-    param->fDerivs = &DerivsCPL;
+  if (param->iTideModel == CPL2) {
+    param->fDerivs = &DerivsCPL2;
     param->fEqSpin = &EqSpinRate_CPL2;
-  } else if (param->iTideModel == CTL) {
-    param->fDerivs = &DerivsCTL;
+  } else if (param->iTideModel == CTL8) {
+    param->fDerivs = &DerivsCTL8;
     param->fEqSpin = &EqSpinRate_CTL8;
   }
 }
@@ -1202,7 +1202,7 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
 void VerifyOutput(PARAM *param,OPTIONS options,OUTPUT *output,int iVerbose) {
   int i;
 
-  if (param->iTideModel != CPL) {
+  if (param->iTideModel != CPL2) {
     for (i=0;i<NUMOUT;i++) {
       if (!strcmp(param->cOutputOrder[i],output->cParam[OUT_EQSPINPERDISCRETE])) {
 	fprintf(stderr,"ERROR: Cannot set both %s to p2 and output option %s.\n",options.cParam[OPT_TIDEMODEL],output->cParam[OUT_EQSPINPERDISCRETE]);
@@ -1219,7 +1219,7 @@ void VerifyOutput(PARAM *param,OPTIONS options,OUTPUT *output,int iVerbose) {
       
 void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDARY *sec,FILES *files,OUTPUT *output,IO *io,fdStep *fdOneStep) {
   char cTmp[16],null[8];
-  int i,iNumLines,nline,foo;   /* foo is a placeholder for calls to EqSpinRate_CTL */
+  int i,iNumLines,nline,foo;   /* foo is a placeholder for calls to EqSpinRate_CTL8 */
   int *iLineOK;
   LINE line;
   INPUT input;
@@ -1400,7 +1400,7 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
     iLineOK[nline] = 1;
 
   /* Tide Model */
-  param->iTideModel=CPL; /* Default is CPL2 */
+  param->iTideModel=CPL2; /* Default is CPL2 */
   sprintf(cTmp,"null");
   AddOptionString(infile,options.cParam[OPT_TIDEMODEL],cTmp,&nline,io->exit_param);
   if (memcmp(cTmp,"null",4) == 0) {
@@ -1408,9 +1408,9 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
        fprintf(stderr,"WARNING: %s not set, assuming second-order constant phase lag.\n",options.cParam[OPT_TIDEMODEL]);
   } else {
     if (memcmp(lower(cTmp),"cp",2) == 0) {
-      param->iTideModel = CPL;
+      param->iTideModel = CPL2;
     } else if (memcmp(lower(cTmp),"ct",2) == 0) {
-      param->iTideModel = CTL;
+      param->iTideModel = CTL8;
     } else {
       if (io->iVerbose >= VERBERR)
 	fprintf(stderr,"ERROR: Unknown argument to %s: %s. Options are cpl or ctl.\n",options.cParam[OPT_TIDEMODEL],cTmp);
@@ -1554,7 +1554,7 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
       fprintf(stderr,"ERROR: %s must be either 0 or 1.\n",options.cParam[OPT_DISCRETEROT]);
     LineExit(infile,nline,io->exit_param,io->iVerbose);
   }
-  if (nline != -1 && param->iTideModel != CPL) {
+  if (nline != -1 && param->iTideModel != CPL2) {
     if (io->iVerbose >= VERBERR) 
       fprintf(stderr,"WARNING: %s is set, but time lag model selected. Ignoring.\n",options.cParam[OPT_DISCRETEROT]);
   }
@@ -2156,13 +2156,13 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
       fprintf(stderr,"ERROR: %s must be greater than 0.\n",options.cParam[OPT_PRIQ]);
     LineExit(infile,nline,io->exit_param,io->iVerbose);
   }
-  if (param->iTideModel == CPL && pri->dQ == 0) {
+  if (param->iTideModel == CPL2 && pri->dQ == 0) {
     if (io->iVerbose >= VERBERR)
       fprintf(stderr,"ERROR: Phase lag model selected, but %s not set.\n",options.cParam[OPT_PRIQ]);
     exit(io->exit_param);
   }
-  if (param->iTideModel == CTL && pri->dQ != 0 && io->iVerbose >= VERBINPUT) 
-    fprintf(stderr,"WARNING: CTL model selected, but %s set.\n",options.cParam[OPT_PRIQ]);
+  if (param->iTideModel == CTL8 && pri->dQ != 0 && io->iVerbose >= VERBINPUT) 
+    fprintf(stderr,"WARNING: CTL8 model selected, but %s set.\n",options.cParam[OPT_PRIQ]);
   if (nline != -1)
     iLineOK[nline] = 1;
   
@@ -2234,7 +2234,7 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
   nline = -1;
   pri->dTau = 0;
   AddOptionDouble(infile,options.cParam[OPT_PRITAU],&pri->dTau,&nline,io->exit_param);
-  if (param->iTideModel == CPL && pri->dTau > 0 && io->iVerbose >= VERBINPUT) 
+  if (param->iTideModel == CPL2 && pri->dTau > 0 && io->iVerbose >= VERBINPUT) 
     fprintf(stderr,"WARNING: Phase lag model selected and %s set.\n",options.cParam[OPT_PRITAU]);
   if (pri->dTau < 0) {
     if (io->iVerbose >= VERBUNITS)
@@ -2244,8 +2244,8 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
     /* Convert timestep to cgs */
     pri->dTau *= dTimeUnit(param->iUnitTime,io->exit_units);
   }
-  if (param->iTideModel == CPL && pri->dTau != 0 && io->iVerbose >= VERBINPUT) 
-    fprintf(stderr,"WARNING: CPL model selected, but %s set.\n",options.cParam[OPT_PRITAU]);
+  if (param->iTideModel == CPL2 && pri->dTau != 0 && io->iVerbose >= VERBINPUT) 
+    fprintf(stderr,"WARNING: CPL2 model selected, but %s set.\n",options.cParam[OPT_PRITAU]);
   if (nline != -1)
     iLineOK[nline] = 1;
    
@@ -2391,13 +2391,13 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
       fprintf(stderr,"ERROR: %s must be greater than 0.\n",options.cParam[OPT_SECQ]);
     LineExit(infile,nline,io->exit_param,io->iVerbose);
   }
-  if (param->iTideModel == CPL && sec->dQ == 0) {
+  if (param->iTideModel == CPL2 && sec->dQ == 0) {
     if (io->iVerbose >= VERBERR)
       fprintf(stderr,"ERROR: %s model selected, but %s not set.\n",options.cParam[OPT_TIDEMODEL],options.cParam[OPT_SECQ]);
     exit(io->exit_param);
   }
-  if (param->iTideModel == CTL && nline != -1 && io->iVerbose >= VERBINPUT) 
-    fprintf(stderr,"WARNING: CTL model selected, but %s set.\n",options.cParam[OPT_SECQ]);
+  if (param->iTideModel == CTL8 && nline != -1 && io->iVerbose >= VERBINPUT) 
+    fprintf(stderr,"WARNING: CTL8 model selected, but %s set.\n",options.cParam[OPT_SECQ]);
   if (nline != -1)
     iLineOK[nline] = 1;
   
@@ -2479,7 +2479,7 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
   sec->dTau = 0;
   nline = -1;
   AddOptionDouble(infile,options.cParam[OPT_SECTAU],&sec->dTau,&nline,io->exit_param);
-  if (param->iTideModel == CPL && sec->dTau > 0 && io->iVerbose >= VERBINPUT) 
+  if (param->iTideModel == CPL2 && sec->dTau > 0 && io->iVerbose >= VERBINPUT) 
     fprintf(stderr,"WARNING: Phase lag model selected, but %s set.\n",options.cParam[OPT_SECTAU]);
   if (sec->dTau < 0) {
     if (io->iVerbose >= VERBUNITS)
@@ -2489,8 +2489,8 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
     /* Convert timestep to cgs */
     sec->dTau *= dTimeUnit(param->iUnitTime,io->exit_units);
   }
-  if (param->iTideModel == CPL && nline != -1 && io->iVerbose >= VERBINPUT) 
-    fprintf(stderr,"WARNING: CPL model selected, but %s set.\n",options.cParam[OPT_SECTAU]);
+  if (param->iTideModel == CPL2 && nline != -1 && io->iVerbose >= VERBINPUT) 
+    fprintf(stderr,"WARNING: CPL2 model selected, but %s set.\n",options.cParam[OPT_SECTAU]);
   if (nline != -1)
     iLineOK[nline] = 1;
   

@@ -66,8 +66,9 @@ to be non-zero. */
 
 #define TINY          (1./HUGE)
 
-#define CPL           1
-#define CTL           10
+#define CPL2          0
+#define CTL2          1
+#define CTL8          8
 
 #define EULER         0
 #define RK4           1
@@ -82,11 +83,13 @@ typedef struct {
   double dQ;		/**< Tidal Q of primary */
   double dK2;		/**< Love number of primary */
   double dObliquity;    /**< Obliquity */
+  double dSinObl;       /**< Sine of the Primary's Obliquity */
   double dSpinRate;     /**< Rotation Rate */
   double dRG;           /**< Radius of Gyration */
 
   double *iEpsilon;     /**< Signs of phase lags */
 
+  int bSynchronous;      /**< Synchronously rotating? */
   int bForceEqSpin;     /**< Force spin rate to be equilibrium? */
   double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
@@ -106,10 +109,12 @@ typedef struct {
   double dQ;		/**< Secondary Tidal Q */
   double dK2;		/**< Secondary Love number */
   double dObliquity;    /**< Obliquity */
+  double dSinObl;       /**< Sine of the Secondary's Obliquity */
   double dSpinRate;     /**< Rotation rate */
   double dRG;           /**< Radius of Gyration */
   double dSyncEcc;      /**< Synchronous rotation below this e */
 
+  int bSynchronous;      /**< Synchronously rotating? */
   int bForceEqSpin;     /**< Tidally lock second? */
   double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
@@ -122,7 +127,7 @@ typedef struct {
 
   double dDomegaDt;     /**< Time derivative of spin rate */
   double dDobliquityDt; /**< Time derivative of obliquity */
-  double dDaDt;         /**< Time derivative of semi-major axis */
+  double dDnDt;         /**< Time derivative of mean motion */
   double dDeDt;         /**< Time derivative of eccentricity */
 } SECONDARY;
 
@@ -141,10 +146,21 @@ typedef struct {
 
 } IO;
 
+typedef double (*fdCPL2Deriv)(PRIMARY*,SECONDARY*,int*,double,int);
+
+typedef struct {
+  fdCPL2Deriv PriMeanM; /**< Function ptr to primary's mean motion ODE */
+  fdCPL2Deriv PriEcc;   /**< Function ptr to primary's eccentricity ODE */
+  fdCPL2Deriv PriObl;   /**< Function ptr to primary's obliquity ODE */
+  fdCPL2Deriv SecMeanM; /**< Function ptr to secondary's mean motion ODE */
+  fdCPL2Deriv SecEcc;   /**< Function ptr to secondary eccentricity ODE */
+  fdCPL2Deriv SecObl;   /**< Function ptr to secondary's obliquity ODE */
+} DERIVS;
+
 /*! Function pointer to the derivative subroutines. This variable is set 
   to the address of the subroutines that calculate the deriviatives.
   The two options are CPL or CTL as set by iTideModel. */
-typedef void (*fvDerivs)(PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double,int);
+typedef void (*fvDerivs)(DERIVS*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double,int);
 
 /*! Function pointer to the equilibrium (tide-locked) spin frequency, either
   CPL or CTL. */
@@ -166,8 +182,9 @@ typedef struct {
 } HALT;
 
 typedef struct {
-  HALT halt;
-
+  HALT halt;            /**< Halt substruct */
+  DERIVS *Derivs;       /** Derives substruct */
+  
   int iUnitMass;        /**< Mass Unit for input/output */
   int iUnitLength;      /**< Length Unit for input/output */
   int iUnitAngle;       /**< Angle Unit for input/output */
@@ -209,7 +226,7 @@ typedef struct {
 
 
 /*! Function pointer to integration method, either Euler or Runge-Kutta. */
-typedef double (*fdStep)(PARAM*,PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double*,double,int);
+typedef double (*fdStep)(PARAM*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double*,double,int);
 
 typedef struct {
   char *cExe;     /**< Name of executable */
@@ -257,6 +274,7 @@ double p2a(double,double);
 double dFreqToPer(double);
 double dPerToFreq(double);
 double dSemiToMeanMotion(double,double);
+double dMeanMotionToSemi(double,double);
 double dRotVel(double,double);
 double DOrbPerDt(double,double,double);
 
@@ -272,6 +290,7 @@ void AssignEpsilon(double,double,int*);
 void AssignZprime(PRIMARY*,SECONDARY*,double *);
 double dDaDtAnn_CPL2(PRIMARY*,SECONDARY*,int**,double *);
 double dDaDt_CPL2(PRIMARY*,SECONDARY*,int **,double*);
+double dDnDt_CPL2(PRIMARY*,SECONDARY*,int **,double*);
 double dDeDt_CPL2(PRIMARY*,SECONDARY*,int **,double*);
 double dDomegaDt_CPL2(double,double,double,double,double,double,int*,double);
 double dDoblDt_CPL2(double,double,double,double,double,int*,double,double,double);
@@ -285,7 +304,7 @@ double EqSpinRate_CPL2Discrete(double,double);
 double EqSpinRate_CPL2Cont(double,double);
 double dGammaRot(double,double,int*);
 double dGammaOrb(double,double,int*);
-void DerivsCPL(PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double,int);
+void DerivsCPL2(DERIVS*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double,int);
 
 /* CTL8 Functions */
 double EqSpinRate_CTL8(double,double,double,int);
@@ -308,11 +327,11 @@ double dDaDt1_CTL8(double,double,double,double,double,double,double,double,doubl
 double dDeDt1_CTL8(double,double,double,double,double,double,double,double,double*,double);
 double dTideHeat_CTL8(double,double*,double,double,double,double);
 double dTideHeatEq_CTL8(double,double*,double,double,double);
-void DerivsCTL(PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double,int);
+void DerivsCTL8(DERIVS*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double,int);
 
 /* Integration Methods */
-double EulerStep(PARAM*,PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double*,double,int);
-double RK4Step(PARAM*,PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double*,double,int);
+double EulerStep(PARAM*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double*,double,int);
+double RK4Step(PARAM*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double*,double,int);
 
 /* Conserved Quantities */
 double dOrbAngMom(PRIMARY*,SECONDARY*);

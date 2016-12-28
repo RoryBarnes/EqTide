@@ -378,6 +378,10 @@ double dSemiToMeanMotion(double dSemi,double dMass) {
   return pow(BIGG*dMass/pow(dSemi,3),0.5);
 }
 
+double dMeanMotionToSemi(double dMM,double dMass) {
+  return pow(BIGG*dMass/(dMM*dMM),(1./3));
+}
+
 double dOrbAngMom(PRIMARY *pri,SECONDARY *sec) {
   return pow( BIGG*(pri->dMass+sec->dMass)*sec->dSemi*(1-sec->dEcc*sec->dEcc),0.5);
 }

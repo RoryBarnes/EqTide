@@ -394,10 +394,12 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   char cTime[16],cTmp[OPTLEN];
   double *chi,*dTideHeat,*dTideSurfFlux;
   double dEqHeatFlux[2],dEqSpinRate[2];
-  double *z,*f,dBeta; // CTL parameters
+  double *z,*f,dBeta; // CTL8 parameters
   double *zprime;
-  int **epsilon; // CPL parameters
-
+  int **epsilon; // CPL2 parameters
+  double **consts;
+  
+  
   epsilon = malloc(2*sizeof(int*));
   epsilon[0] = malloc(10*sizeof(int));
   epsilon[1] = malloc(10*sizeof(int));
@@ -430,12 +432,12 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     
     /* Tidal Model */
     fprintf(fp,"Tidal Model: ");
-    if (param.iTideModel == CPL) 
+    if (param.iTideModel == CPL2) 
       fprintf(fp,"Constant-Phase-Lag\n");
-    else if (param.iTideModel == CTL) 
+    else if (param.iTideModel == CTL8) 
       fprintf(fp,"Constant-Time-Lag\n");
  
-    if (param.iTideModel == CPL) 
+    if (param.iTideModel == CPL2) 
       fprintf(fp,"Use Discrete Rotation Rate Model: %d\n",param.bDiscreteRot);
 
     /* Integration method */
@@ -612,11 +614,11 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     fprintd(fp,pri.dRadius/dLengthUnit(param.iUnitLength,io.exit_units),io.iSciNot,io.iDigits);
     fprintf(fp,"\n");
 
-    if (param.iTideModel == CPL) {
+    if (param.iTideModel == CPL2) {
       fprintf(fp,"Primary Tidal Q: ");
       fprintd(fp,pri.dQ,io.iSciNot,io.iDigits);
       fprintf(fp,"\n");
-    } else if (param.iTideModel == CTL) {
+    } else if (param.iTideModel == CTL8) {
       fprintf(fp,"Primary Time Lag: ");
       fprintd(fp,pri.dTau/dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
     }
@@ -675,11 +677,11 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     fprintd(fp,sec.dRadius/dLengthUnit(param.iUnitLength,io.exit_units),io.iSciNot,io.iDigits);
     fprintf(fp,"\n");
     
-    if (param.iTideModel == CPL) {
+    if (param.iTideModel == CPL2) {
       fprintf(fp,"Secondary Tidal Q: ");
       fprintd(fp,sec.dQ,io.iSciNot,io.iDigits);
       fprintf(fp,"\n");
-    } else if (param.iTideModel == CTL) {
+    } else if (param.iTideModel == CTL8) {
       fprintf(fp,"Secondary Time Lag: ");
       fprintd(fp,sec.dTau/dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
       fprintf(fp,"\n");
@@ -750,10 +752,10 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
 
   fprintf(fp,"\n--------- Tidal Effects ---------\n\n");
 
-  if (param.iTideModel == CPL) {
+  if (param.iTideModel == CPL2) {
     /* Constant-Phase-Lag, order 2 */
 
-    DerivsCPL(&pri,&sec,&io,zprime,chi,f,dBeta,epsilon,0,param.bDiscreteRot);
+    DerivsCPL2(param.Derivs,&pri,&sec,&io,consts,f,dBeta,epsilon,0,param.bDiscreteRot);
 
     dEqSpinRate[0] = EqSpinRate_CPL2(sec.dMeanMotion,sec.dEcc,pri.dObliquity,param.bDiscreteRot);
     dEqSpinRate[1] = EqSpinRate_CPL2(sec.dMeanMotion,sec.dEcc,sec.dObliquity,param.bDiscreteRot);
@@ -770,10 +772,10 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     dEqHeatFlux[0] = dTideHeatEq_CPL2(zprime[0],sec.dEcc,pri.dObliquity,sec.dMeanMotion,param.bDiscreteRot)/(4*PI*pri.dRadius*pri.dRadius)/1e3;
     dEqHeatFlux[1] = dTideHeatEq_CPL2(zprime[1],sec.dEcc,sec.dObliquity,sec.dMeanMotion,param.bDiscreteRot)/(4*PI*sec.dRadius*sec.dRadius)/1e3;
 
-  } else if (param.iTideModel == CTL) {
+  } else if (param.iTideModel == CTL8) {
     dBeta = AssignBeta(sec.dEcc);
     
-    DerivsCTL(&pri,&sec,&io,z,chi,f,dBeta,epsilon,0,param.bDiscreteRot);
+    DerivsCTL8(param.Derivs,&pri,&sec,&io,consts,f,dBeta,epsilon,0,param.bDiscreteRot);
 
     dEqSpinRate[0] = EqSpinRate_CTL8(sec.dMeanMotion,sec.dEcc,pri.dObliquity,param.bDiscreteRot);
     dEqSpinRate[1] = EqSpinRate_CTL8(sec.dMeanMotion,sec.dEcc,sec.dObliquity,param.bDiscreteRot);
@@ -790,14 +792,14 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     dEqHeatFlux[1] = dTideHeatEq_CTL8(z[1],f,dBeta,sec.dObliquity,sec.dMeanMotion)/(4*PI*sec.dRadius*sec.dRadius)/1e3;
   }
 
-  fprintf(fp,"da/dt: ");
-  fprintd(fp,sec.dDaDt*dTimeUnit(param.iUnitTime,io.exit_units)/dLengthUnit(param.iUnitLength,io.exit_units),io.iSciNot,io.iDigits);
+  fprintf(fp,"da/dt: "); //XXX
+  fprintd(fp,sec.dDnDt*dTimeUnit(param.iUnitTime,io.exit_units)/dLengthUnit(param.iUnitLength,io.exit_units),io.iSciNot,io.iDigits);
   fprintf(fp,"\n");
   fprintf(fp,"de/dt: ");
   fprintd(fp,sec.dDeDt*dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
   fprintf(fp,"\n");
 
-  tmp = DOrbPerDt(pri.dMass,sec.dSemi,sec.dDaDt);
+  tmp = DOrbPerDt(pri.dMass,sec.dMeanMotion,sec.dDnDt); //XXX
   fprintf(fp,"dP/dt: ");
   fprintd(fp,tmp,io.iSciNot,io.iDigits);
   fprintf(fp,"\n");
@@ -849,7 +851,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   fprintd(fp,dEqHeatFlux[1],io.iSciNot,io.iDigits);
   fprintf(fp,"\n\n");
 
-  if (param.iTideModel == CPL) {
+  if (param.iTideModel == CPL2) {
     fprintf(fp,"Use Discrete Rotation States: %d\n",param.bDiscreteRot);
     fprintf(fp,"Discrete Equilibrium Spin Period: ");
     fprintd(fp,dFreqToPer(EqSpinRate_CPL2Discrete(sec.dMeanMotion,sec.dEcc))/dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
@@ -874,7 +876,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
     fprintd(fp,dGammaOrb(sec.dEcc,sec.dObliquity,epsilon[1]),io.iSciNot,io.iDigits);
     fprintf(fp,"\n");
     
-  } else if (param.iTideModel == CTL) {
+  } else if (param.iTideModel == CTL8) {
     fprintf(fp,"Secondary's Equilibrium Rotation Period: ");
     fprintd(fp,dFreqToPer(dEqSpinRate[1])/dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
     fprintf(fp,"\n");
@@ -931,20 +933,20 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
   chi=malloc(2*sizeof(double));
   f=malloc(5*sizeof(double));
   
-  if (param->iTideModel == CPL) {
+  if (param->iTideModel == CPL2) {
     AssignEpsilon(pri->dSpinRate,sec->dMeanMotion,epsilon[0]);
     AssignEpsilon(sec->dSpinRate,sec->dMeanMotion,epsilon[1]);
-    AssignZprime(pri,sec,z);
-  } else if (param->iTideModel == CTL) {
+    //XXX AssignZprime(pri,sec,z);
+  } else if (param->iTideModel == CTL8) {
     f[0]=AssignF1(sec->dEcc);
     f[1]=AssignF2(sec->dEcc);
     f[2]=AssignF3(sec->dEcc);
     f[3]=AssignF4(sec->dEcc);
     f[4]=AssignF5(sec->dEcc);
     beta=AssignBeta(sec->dEcc);
-    AssignZ(pri,sec,z);
+    //AssignZ(pri,sec,z);XXX
   }
-  AssignChi(pri,sec,chi);
+  //AssignChi(pri,sec,chi);XXX
   
   /* Assign outputs */
   for (j=0;j<NUMOUT;j++) {
@@ -1002,7 +1004,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Total da/dt */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_ORBDADT])) {
-      col[j+n]=sec->dDaDt;
+      col[j+n]=sec->dDnDt; //XXXX
       if (output->iNeg[OUT_ORBDADT])
 	col[j+n] *= output->dConvert[OUT_ORBDADT];
       else /* AU/Gyr */
@@ -1060,9 +1062,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Primary's Contribution to da/dt */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_PRIDADT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
-	col[j+n] = dDaDt1_CPL2(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,pri->dObliquity,epsilon[0],z[0]);
-      else /* CTL8 */
+      if (param->iTideModel == CPL2){  /* CPL2 */
+	//XXX col[j+n] = dDaDt1_CPL2(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,pri->dObliquity,epsilon[0],z[0]);
+      }else /* CTL8 */
 	col[j+n] = dDaDt1_CTL8(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[0],pri->dSpinRate,pri->dObliquity,f,beta);
       
       if (output->iNeg[OUT_PRIDADT])
@@ -1074,9 +1076,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Primary's Contribution to de/dt */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_PRIDEDT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
-	col[j+n] = dDeDt1_CPL2(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,epsilon[0],z[0]);
-      else /* CTL8 */
+      if (param->iTideModel == CPL2) { /* CPL2 */
+	//XXX col[j+n] = dDeDt1_CPL2(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,epsilon[0],z[0]);
+      } else /* CTL8 */
 	col[j+n] = dDeDt1_CTL8(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[0],pri->dSpinRate,pri->dObliquity,f,beta);
       
       if (output->iNeg[OUT_PRIDEDT])
@@ -1153,7 +1155,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Primary Body's Heat */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_PRIHEAT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
+      if (param->iTideModel == CPL2)  /* CPL2 */
 	col[j+n]=dTideHeat_CPL2(epsilon[0],z[0],sec->dEcc,sec->dMeanMotion,pri->dSpinRate,pri->dObliquity);
       else /* CTL8 */
 	col[j+n]=dTideHeat_CTL8(z[0],f,beta,pri->dSpinRate,pri->dObliquity,sec->dMeanMotion);
@@ -1206,7 +1208,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Primary's Surface Heat Flux */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_PRISURFFLUX])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
+      if (param->iTideModel == CPL2)  /* CPL2 */
 	col[j+n]=dTideHeat_CPL2(epsilon[0],z[0],sec->dEcc,sec->dMeanMotion,pri->dSpinRate,pri->dObliquity);
       else /* CTL8 */
 	col[j+n]=dTideHeat_CTL8(z[0],f,beta,pri->dSpinRate,pri->dObliquity,sec->dMeanMotion);
@@ -1222,7 +1224,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Primary Body's Tidal Heat */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_PRITIDEHEAT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
+      if (param->iTideModel == CPL2)  /* CPL2 */
 	col[j+n]=dTideHeat_CPL2(epsilon[0],z[0],sec->dEcc,sec->dMeanMotion,pri->dSpinRate,pri->dObliquity);
       else /* CTL8 */
 	col[j+n]=dTideHeat_CTL8(z[0],f,beta,pri->dSpinRate,pri->dObliquity,sec->dMeanMotion);
@@ -1258,9 +1260,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Seondary's Contribution to da/dt */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECDADT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
-	col[j+n] = dDaDt1_CPL2(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dObliquity,epsilon[1],z[1]);
-      else /* CTL8 */
+      if (param->iTideModel == CPL2) {  /* CPL2 */
+	//XXXcol[j+n] = dDaDt1_CPL2(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dObliquity,epsilon[1],z[1]);
+      }else /* CTL8 */
 	col[j+n] = dDaDt1_CTL8(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[1],sec->dSpinRate,sec->dObliquity,f,beta);
       
       if (output->iNeg[OUT_SECDADT])
@@ -1272,9 +1274,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Secondary's Contribution to de/dt */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECDEDT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
-	col[j+n] = dDeDt1_CPL2(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,epsilon[1],z[1]);
-      else /* CTL8 */
+      if (param->iTideModel == CPL2){  /* CPL2 */
+	//XXXcol[j+n] = dDeDt1_CPL2(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,epsilon[1],z[1]);
+      } else /* CTL8 */
 	col[j+n] = dDeDt1_CTL8(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[1],sec->dSpinRate,sec->dObliquity,f,beta);
       
       if (output->iNeg[OUT_SECDEDT])
@@ -1336,7 +1338,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Secondary's Equilibrium Tidal Heat Flux */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECEQSURFFLUX])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
+      if (param->iTideModel == CPL2)  /* CPL2 */
 	col[j+n] = dTideHeatEq_CPL2(z[1],sec->dEcc,sec->dObliquity,sec->dMeanMotion,param->bDiscreteRot);
       else /* CTL8 */
 	col[j+n] = dTideHeatEq_CTL8(z[1],f,beta,sec->dObliquity,sec->dMeanMotion);
@@ -1364,7 +1366,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Secondary's Heat */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECHEAT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
+      if (param->iTideModel == CPL2)  /* CPL2 */
 	col[j+n]=dTideHeat_CPL2(epsilon[1],z[1],sec->dEcc,sec->dMeanMotion,sec->dSpinRate,sec->dObliquity);
       else /* CTL8 */
 	col[j+n]=dTideHeat_CTL8(z[1],f,beta,sec->dSpinRate,sec->dObliquity,sec->dMeanMotion);
@@ -1435,7 +1437,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Secondary's Surface Heat Flux */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECSURFFLUX])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
+      if (param->iTideModel == CPL2)  /* CPL2 */
 	col[j+n]=dTideHeat_CPL2(epsilon[1],z[1],sec->dEcc,sec->dMeanMotion,sec->dSpinRate,sec->dObliquity);
       else /* CTL8 */
 	col[j+n]=dTideHeat_CTL8(z[1],f,beta,sec->dSpinRate,sec->dObliquity,sec->dMeanMotion);
@@ -1453,7 +1455,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Secondary's Tidal Heat */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECTIDEHEAT])) {
-      if (param->iTideModel == CPL)  /* CPL2 */
+      if (param->iTideModel == CPL2)  /* CPL2 */
 	col[j+n]=dTideHeat_CPL2(epsilon[1],z[1],sec->dEcc,sec->dMeanMotion,sec->dSpinRate,sec->dObliquity);
       else /* CTL8 */
 	col[j+n]=dTideHeat_CTL8(z[1],f,beta,sec->dSpinRate,sec->dObliquity,sec->dMeanMotion);
@@ -1532,8 +1534,8 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Semi-Major Axis Timescale */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_TAUSEMI])) {
-      if (sec->dDaDt != 0) 
-	col[j+n] = fabs(sec->dSemi/sec->dDaDt);
+      if (sec->dDnDt != 0)//XXXX 
+	col[j+n] = fabs(sec->dMeanMotion/sec->dDnDt);//XXX
       else
 	col[j+n] = HUGE;
       
