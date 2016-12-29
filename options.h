@@ -130,6 +130,7 @@ typedef struct {
   double dPriVRot;
   double dSecSpinPer;
   double dSecVRot;
+  double dSemi;
 } INPUT;
 
 

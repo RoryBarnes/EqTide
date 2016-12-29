@@ -955,19 +955,19 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
    /* foo is a placeholder for calls to EqSpinRate_CTL8 */
   int foo;
 
-  if (sec->dSemi == 0 && sec->dMeanMotion == 0 && input.dPeriod == 0) {
-    fprintf(stderr,"ERROR: dSemi, dMeanMotion, or dPeriod are not set.\n");
+  if (input.dSemi == 0 && sec->dMeanMotion == 0 && input.dPeriod == 0) {
+    fprintf(stderr,"ERROR: None of dSemi, dMeanMotion, and dPeriod is not set.\n");
     exit(io->exit_param);
   }
-  if (sec->dSemi != 0 && sec->dMeanMotion != 0 && input.dPeriod != 0) {
+  if (input.dSemi != 0 && sec->dMeanMotion != 0 && input.dPeriod != 0) {
     fprintf(stderr,"ERROR: dSemi (line %d), dMeanMotion (line %d) and dPeriod (line %d) are all set! Only one is allowed.\n",line.lSemi,line.lMeanMotion,line.lPeriod);
     exit(io->exit_param);
   }
-  if (sec->dSemi != 0 && sec->dMeanMotion != 0) {
+  if (input.dSemi != 0 && sec->dMeanMotion != 0) {
     fprintf(stderr,"ERROR: dSemi (line %d), dMeanMotion (line %d) are both set! Only one is allowed.\n",line.lSemi,line.lMeanMotion);
     exit(io->exit_param);
   }
-  if (sec->dSemi != 0 && input.dPeriod != 0) {
+  if (input.dSemi != 0 && input.dPeriod != 0) {
     fprintf(stderr,"ERROR: dSemi (line %d) and dPeriod (line %d) are both set! Only one is allowed.\n",line.lSemi,line.lPeriod);
     exit(io->exit_param);
   }
@@ -978,19 +978,13 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
 
   /* 
    * Only one of semi-major axis, period and mean motion are set, now 
-   * assign dSemi and dMeanMotion. 
+   * assign dMeanMotion. 
    */
 
-  if (sec->dSemi != 0) {
-    input.dPeriod=a2p(sec->dSemi,(sec->dMass + pri->dMass));
-    sec->dMeanMotion=dPerToFreq(input.dPeriod);
-  } else if (sec->dMeanMotion != 0) {
-    input.dPeriod=dFreqToPer(sec->dMeanMotion);
-    sec->dSemi=p2a(input.dPeriod,(sec->dMass + pri->dMass));
-  } else if (input.dPeriod != 0) {
-    sec->dMeanMotion = dPerToFreq(input.dPeriod);
-    sec->dSemi = p2a(input.dPeriod,(pri->dMass+sec->dMass));
-  }
+  if (input.dPeriod != 0)
+    sec->dMeanMotion=2*PI/dPerToFreq(input.dPeriod);
+  if (input.dSemi != 0)
+    sec->dMeanMotion = dSemiToMeanMotion(input.dSemi,(pri->dMass+sec->dMass));
 
   /*
    * Primary Mass and Radius
@@ -1125,6 +1119,8 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
       if (input.dPriVRot != 0)
 	pri->dSpinRate = input.dPriVRot/(2*PI*pri->dRadius);
     }
+    // Set bSynchronous to 0 by default
+    pri->bSynchronous = 0;
   }
 
   /* 
@@ -1187,6 +1183,9 @@ void VerifyOptions(PARAM *param,PRIMARY *pri,SECONDARY *sec,INPUT input,OPTIONS 
       if (input.dSecVRot != 0)
 	sec->dSpinRate = input.dSecVRot/(2*PI*sec->dRadius);
     }
+    // Set bSynchronous to 0 by default
+    sec->bSynchronous = 0;
+
   }
 
   /* Set model-specific functions */
@@ -1967,16 +1966,16 @@ void ReadOptions(char infile[],OPTIONS options,PARAM *param,PRIMARY *pri,SECONDA
 
   /* Semi-Major Axis */
 
-  sec->dSemi = 0;
+  input.dSemi = 0;
   nline = -1;
-  AddOptionDouble(infile,options.cParam[OPT_ORBSEMI],&sec->dSemi,&nline,io->exit_param);
-  if (sec->dSemi < 0) {
-    sec->dSemi = -sec->dSemi*AUCM;
+  AddOptionDouble(infile,options.cParam[OPT_ORBSEMI],&input.dSemi,&nline,io->exit_param);
+  if (input.dSemi < 0) {
+    input.dSemi = -input.dSemi*AUCM;
     if (io->iVerbose >= VERBUNITS)
       fprintf(stderr,"WARNING: %s is less than zero, assuming AU.\n",options.cParam[OPT_ORBSEMI]);
     iLineOK[nline] = 1;
-  } else if (sec->dSemi > 0) {
-    sec->dSemi *= dLengthUnit(param->iUnitLength,io->exit_units);
+  } else if (input.dSemi > 0) {
+    input.dSemi *= dLengthUnit(param->iUnitLength,io->exit_units);
     iLineOK[nline] = 1;
   }
   line.lSemi=nline;

@@ -164,14 +164,14 @@ void CalculateConstantsCPL2(PRIMARY *pri,SECONDARY *sec,double **consts) {
   }
 
   if (sec->bSynchronous) {
-    consts[0][0] = 9*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(2*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
-    consts[0][1] = -21*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(2*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
-    consts[0][3] = -1.5*sec->dK2*pri->dMass*pow(sec->dRadius,5)/sec->dMass*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
+    consts[1][0] = 9*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(2*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
+    consts[1][1] = -21*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(2*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
+    consts[1][3] = -1.5*sec->dK2*pri->dMass*pow(sec->dRadius,5)/sec->dMass*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
   } else {
-    consts[0][0] = -9*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(8*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
-    consts[0][1] = -3*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(8*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
-    consts[0][2] = -3*sec->dK2*pri->dMass*pri->dMass*pow(sec->dRadius,3)/(8*sec->dRG*sec->dRG*BIGG*pow((pri->dMass+sec->dMass),2));
-    consts[0][3] = 3*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(4*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
+    consts[1][0] = -9*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(8*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
+    consts[1][1] = -3*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(8*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
+    consts[1][2] = -3*sec->dK2*pri->dMass*pri->dMass*pow(sec->dRadius,3)/(8*sec->dRG*sec->dRG*BIGG*pow((pri->dMass+sec->dMass),2));
+    consts[1][3] = 3*sec->dK2*pri->dMass*pow(sec->dRadius,5)/(4*sec->dMass)*pow(BIGG*(pri->dMass+sec->dMass),-5./3);
   }
 }
  
@@ -332,13 +332,13 @@ void DerivsCPL2(DERIVS *derivs,PRIMARY *pri,SECONDARY *sec,IO *io,double **const
   sec->dDnDt = pow(sec->dMeanMotion,16./3)*(derivs->PriMeanM(pri,sec,epsilon[0],consts[0][0],0) + derivs->SecMeanM(pri,sec,epsilon[1],consts[1][0],1));
   sec->dDeDt = sec->dEcc*pow(sec->dMeanMotion,13./3)*(derivs->PriEcc(pri,sec,epsilon[0],consts[0][1],0) + derivs->SecEcc(pri,sec,epsilon[1],consts[1][1],1));
 
-  pri->dDobliquityDt = derivs->PriObl(pri,sec,epsilon[0],consts[0][3],0);
-  sec->dDobliquityDt = derivs->SecObl(pri,sec,epsilon[1],consts[1][3],1);
+  pri->dDobliquityDt = pri->dSinObl*pow(sec->dMeanMotion,13./3)*derivs->PriObl(pri,sec,epsilon[0],consts[0][3],0);
+  sec->dDobliquityDt = sec->dSinObl*pow(sec->dMeanMotion,13./3)*derivs->SecObl(pri,sec,epsilon[1],consts[1][3],1);
 
   if (!pri->bForceEqSpin)
-    pri->dDomegaDt = dDomegaDtCPL2Free(pri,sec,epsilon[0],consts[0][2],0);
+    pri->dDomegaDt = pow(sec->dMeanMotion,4)*dDomegaDtCPL2Free(pri,sec,epsilon[0],consts[0][2],0);
   if (!sec->bForceEqSpin)
-    sec->dDomegaDt = dDomegaDtCPL2Free(pri,sec,epsilon[1],consts[1][2],1);
+    sec->dDomegaDt = pow(sec->dMeanMotion,4)*dDomegaDtCPL2Free(pri,sec,epsilon[1],consts[1][2],1);
 }
 
 /*
@@ -472,8 +472,8 @@ double dDaDt_CTL8(PRIMARY *pri,SECONDARY *sec,double *z,double beta,double *f) {
   sum=0;
   for (i=0;i<2;i++) 
       sum += z[i]*(cos(psi[i])*f[1]*omega[i]/(pow(beta,12)*sec->dMeanMotion) - f[0]/pow(beta,15));
-
-  return 2*sec->dSemi*sec->dSemi/(BIGG*pri->dMass*sec->dMass)*sum;
+  return 0;//XXX
+  //  return 2*sec->dSemi*sec->dSemi/(BIGG*pri->dMass*sec->dMass)*sum;
 }
 
 double dDeDt_CTL8(PRIMARY *pri,SECONDARY *sec,double *z,double beta,double *f) {
@@ -494,8 +494,8 @@ double dDeDt_CTL8(PRIMARY *pri,SECONDARY *sec,double *z,double beta,double *f) {
 
   free(psi);
   free(omega);
-  
-  return 11*sec->dSemi*sec->dEcc/(2*BIGG*pri->dMass*sec->dMass)*sum;
+  return 0;//XXX
+  // return 11*sec->dSemi*sec->dEcc/(2*BIGG*pri->dMass*sec->dMass)*sum;
 }
 
 double dDaDt1_CTL8(double dMass,double dMassPert,double dSemi,double dEcc,double dMeanMotion,double z,double dOmega,double dPsi,double *f,double beta) {
@@ -539,7 +539,7 @@ void DerivsCTL8(DERIVS *derivs,PRIMARY *pri,SECONDARY *sec,IO *io,double **const
 
   double *z,*chi;
   
-  sec->dMeanMotion = dSemiToMeanMotion(sec->dSemi,(pri->dMass+sec->dMass));
+  //XXX sec->dMeanMotion = dSemiToMeanMotion(sec->dSemi,(pri->dMass+sec->dMass));
   //AssignChi(pri,sec,chi);
   //AssignZ(pri,sec,z);
   dBeta = AssignBeta(sec->dEcc);
@@ -624,22 +624,23 @@ void CheckTideLock(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **cons
   /* Maintain spins at equilibrium rate? */
   /* dDomegaDt is set to TINY to not throw variable timestepping */
   
-  if (pri->bForceEqSpin)
+  if (pri->bForceEqSpin) {
     pri->dSpinRate = param->fEqSpin(sec->dMeanMotion,sec->dEcc,pri->dObliquity,param->bDiscreteRot);
-  if (!sec->bSynchronous && sec->dEcc < sqrt(1./19)) {
-    /* The primary was synchronously rotating at 3:2, but now eccentricity
-       has damped enough for it to become a synchronous rotator. The 
-       bSynchronous flag is now flipped to 1, and the derivatives
-       are changed. */
-    pri->bSynchronous = 1;
-    if (param->iTideModel == CPL2) {
-      CalculateConstantsCPL2(pri,sec,consts);
-      AssignDerivsCPL2LockPri(param->Derivs);
-    } else if (param->iTideModel == CTL2) {
-      //CalculateConstantsCTL2(pri,sec,consts);
-      //AssignDerivsCTL2LockPri(&param->Derivs);
-    } else if (param->iTideModel == CTL8) {
-      //AssignDerivsCTL8LockPri(&param->Derivs);
+    if (!sec->bSynchronous && sec->dEcc < sqrt(1./19)) {
+      /* The primary was synchronously rotating at 3:2, but now eccentricity
+	 has damped enough for it to become a synchronous rotator. The 
+	 bSynchronous flag is now flipped to 1, and the derivatives
+	 are changed. */
+      pri->bSynchronous = 1;
+      if (param->iTideModel == CPL2) {
+	CalculateConstantsCPL2(pri,sec,consts);
+	AssignDerivsCPL2LockPri(&param->Derivs);
+      } else if (param->iTideModel == CTL2) {
+	//CalculateConstantsCTL2(pri,sec,consts);
+	//AssignDerivsCTL2LockPri(&param->Derivs);
+      } else if (param->iTideModel == CTL8) {
+	//AssignDerivsCTL8LockPri(&param->Derivs);
+      }
     }
   }
   else {
@@ -653,7 +654,7 @@ void CheckTideLock(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **cons
 	pri->bSynchronous = 1;
 	if (param->iTideModel == CPL2) {
 	  CalculateConstantsCPL2(pri,sec,consts);
-	  AssignDerivsCPL2LockPri(param->Derivs);
+	  AssignDerivsCPL2LockPri(&param->Derivs);
 	} else if (param->iTideModel == CTL2) {
 	  //CalculateConstantsCTL2(param->consts);
 	  //AssignDerivsCTL2LockPri(&param->Derivs);
@@ -672,21 +673,22 @@ void CheckTideLock(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **cons
     }
   }
   
-  if (sec->bForceEqSpin)
+  if (sec->bForceEqSpin) {
     sec->dSpinRate = param->fEqSpin(sec->dMeanMotion,sec->dEcc,sec->dObliquity,param->bDiscreteRot);
-  if (!sec->bSynchronous && sec->dEcc < sqrt(1./19)) {
-    /* The secondary was synchronously rotating at 3:2, but now eccentricity
-       has damped enough for it to become a synchronous rotator. The 
-       bSynchronous flag is now flipped to 1, and the derivatives
-       are changed. */
-    sec->bSynchronous = 1;
-    if (param->iTideModel == CPL2) {
-      CalculateConstantsCPL2(pri,sec,consts);
-      AssignDerivsCPL2LockSec(param->Derivs);
-    } else if (param->iTideModel == CTL2) {
-      //AssignDerivsCTL2LockSec(&param->Derivs);
-    } else if (param->iTideModel == CTL8) {
-      //AssignDerivsCTL8LockSec(&param->Derivs);
+    if (!sec->bSynchronous && sec->dEcc < sqrt(1./19)) {
+      /* The secondary was synchronously rotating at 3:2, but now eccentricity
+	 has damped enough for it to become a synchronous rotator. The 
+	 bSynchronous flag is now flipped to 1, and the derivatives
+	 are changed. */
+      sec->bSynchronous = 1;
+      if (param->iTideModel == CPL2) {
+	CalculateConstantsCPL2(pri,sec,consts);
+	AssignDerivsCPL2LockSec(&param->Derivs);
+      } else if (param->iTideModel == CTL2) {
+	//AssignDerivsCTL2LockSec(&param->Derivs);
+      } else if (param->iTideModel == CTL8) {
+	//AssignDerivsCTL8LockSec(&param->Derivs);
+      }
     }
   }
   else {
@@ -700,7 +702,7 @@ void CheckTideLock(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **cons
 	sec->bSynchronous = 1;
 	if (param->iTideModel == CPL2) {
 	  CalculateConstantsCPL2(pri,sec,consts);
-	  AssignDerivsCPL2LockSec(param->Derivs);
+	  AssignDerivsCPL2LockSec(&param->Derivs);
 	} else if (param->iTideModel == CTL2) {
 	  // AssignDerivsCTL2LockSec(&param->Derivs);
 	} else if (param->iTideModel == CTL8) {
@@ -722,14 +724,16 @@ int bCheckHaltSemi(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double dTime)
      default. If calculations will not result in a merge, set bMerge=0 to 
      maximize performance. */
 
+  double dSemi;
+
   // Calculate Semi-major axis 
-  sec->dSemi = dMeanMotionToSemi(sec->dMeanMotion,(pri->dMass+sec->dMass));
+  dSemi = dMeanMotionToSemi(sec->dMeanMotion,(pri->dMass+sec->dMass));
   
   /* Minimum Semi-major Axis? */
-  if (sec->dSemi <= param->halt.dMinSemi) {
+  if (dSemi <= param->halt.dMinSemi) {
     if (io->iVerbose >= VERBPROG) {
       printf("HALT: a = ");
-      fprintd(stdout,sec->dSemi,io->iSciNot,io->iDigits);
+      fprintd(stdout,dSemi,io->iSciNot,io->iDigits);
       printf(", < min a = ");
       fprintd(stdout,param->halt.dMinSemi,io->iSciNot,io->iDigits);
       printf(" at %.2e years\n",dTime/YEARSEC);
@@ -739,7 +743,7 @@ int bCheckHaltSemi(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double dTime)
 
   /* Merge? */
 
-  if (sec->dSemi*(1-sec->dEcc) <= (pri->dRadius + sec->dRadius) && param->halt.bMerge) { /* Merge! */
+  if (dSemi*(1-sec->dEcc) <= (pri->dRadius + sec->dRadius) && param->halt.bMerge) { /* Merge! */
     if (io->iVerbose > VERBPROG) 
       printf("HALT: Merge at %.2e years!\n",dTime/YEARSEC);
 
@@ -967,7 +971,7 @@ double RK4Step(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **consts,d
   }
 
   // Derivatives at start
-  param->fDerivs(param->Derivs,&tmpPri[0],&tmpSec[0],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
+  param->fDerivs(&param->Derivs,&tmpPri[0],&tmpSec[0],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
   
   /* Adjust dt? */
   if (param->bVarDt) 
@@ -976,17 +980,17 @@ double RK4Step(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **consts,d
   Update(param,&tmpPri[1],&tmpSec[1],tmpPri[0],tmpSec[0],0.5*dDt,iDir);
 
   // Derivatives at first midpoint
-  param->fDerivs(param->Derivs,&tmpPri[1],&tmpSec[1],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
+  param->fDerivs(&param->Derivs,&tmpPri[1],&tmpSec[1],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
   
   Update(param,&tmpPri[2],&tmpSec[2],tmpPri[1],tmpSec[1],0.5*dDt,iDir);
 
   // Derivatives at second midpoint
-  param->fDerivs(param->Derivs,&tmpPri[2],&tmpSec[2],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
+  param->fDerivs(&param->Derivs,&tmpPri[2],&tmpSec[2],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
   
   Update(param,&tmpPri[3],&tmpSec[3],tmpPri[2],tmpSec[2],dDt,iDir);
 
   // Derivatives at end
-  param->fDerivs(param->Derivs,&tmpPri[3],&tmpSec[3],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
+  param->fDerivs(&param->Derivs,&tmpPri[3],&tmpSec[3],io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
   
   pri->dDomegaDt = 1./6*(tmpPri[0].dDomegaDt + 2*tmpPri[1].dDomegaDt + 2*tmpPri[2].dDomegaDt + tmpPri[3].dDomegaDt);
   pri->dDobliquityDt = 1./6*(tmpPri[0].dDobliquityDt + 2*tmpPri[1].dDobliquityDt + 2*tmpPri[2].dDobliquityDt + tmpPri[3].dDobliquityDt);
@@ -1005,7 +1009,7 @@ double RK4Step(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **consts,d
 double EulerStep(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **consts,double *f,double dBeta,int **epsilon,double *dTime,double dTimeOut,int iDir) {
   double dDt;
   
-  param->fDerivs(param->Derivs,pri,sec,io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
+  param->fDerivs(&param->Derivs,pri,sec,io,consts,f,dBeta,epsilon,*dTime,param->bDiscreteRot);
 
   /* Adjust dt? */
   if (param->bVarDt) 
@@ -1019,14 +1023,14 @@ double EulerStep(PARAM *param,PRIMARY *pri,SECONDARY *sec,IO *io,double **consts
 void AssignDerivs(PARAM *param,PRIMARY *pri,SECONDARY *sec) {
   if (param->iTideModel == CPL2) {
     if (pri->bSynchronous) 
-      AssignDerivsCPL2LockPri(param->Derivs);
+      AssignDerivsCPL2LockPri(&param->Derivs);
     else
-      AssignDerivsCPL2FreePri(param->Derivs);
+      AssignDerivsCPL2FreePri(&param->Derivs);
     
     if (sec->bSynchronous)
-      AssignDerivsCPL2LockSec(param->Derivs);
+      AssignDerivsCPL2LockSec(&param->Derivs);
     else
-      AssignDerivsCPL2FreeSec(param->Derivs);
+      AssignDerivsCPL2FreeSec(&param->Derivs);
   } else if (param->iTideModel == CTL2) {
   } else if (param->iTideModel == CTL8) {
   }
@@ -1066,7 +1070,7 @@ void Backward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *fil
   dTimeOut = param->dBackOutputTime;
 
   /* Calculate initial derivatives */
-  param->fDerivs(param->Derivs,pri,sec,io,consts,f,dBeta,epsilon,dTime,dTimeOut);
+  param->fDerivs(&param->Derivs,pri,sec,io,consts,f,dBeta,epsilon,dTime,dTimeOut);
 
   /* Adjust dt? */
   if (param->bVarDt) 
@@ -1171,7 +1175,7 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
   AssignConstants(param,pri,sec,consts);
   
   /* Calculate initial derivatives */
-  param->fDerivs(param->Derivs,pri,sec,io,consts,f,dBeta,epsilon,dTime,dTimeOut);
+  param->fDerivs(&param->Derivs,pri,sec,io,consts,f,dBeta,epsilon,dTime,dTimeOut);
 
   /* Adjust dt? */
   if (param->bVarDt) 
@@ -1201,8 +1205,8 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
 	free(epsilon[1]);
 	free(epsilon[0]);
 	free(epsilon);
-	free(chi);
-	free(z);
+	//free(chi);
+	//free(z);
 	return;
       }
     }
@@ -1221,8 +1225,8 @@ void Forward(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,FILES *file
   free(epsilon[1]);
   free(epsilon[0]);
   free(epsilon);
-  free(chi);
-  free(z);
+  //free(chi);
+  //free(z);
 }
 
 int main(int argc,char *argv[]) {

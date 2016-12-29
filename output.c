@@ -390,7 +390,7 @@ void InitializeOutput(OUTPUT *output) {
 void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO io,int iEnd) {
   int i,j,k,foo; // foo is a placehold for EqSpinRate_CTL8
   FILE *fp;
-  double tmp;
+  double dSemi,tmp;
   char cTime[16],cTmp[OPTLEN];
   double *chi,*dTideHeat,*dTideSurfFlux;
   double dEqHeatFlux[2],dEqSpinRate[2];
@@ -399,6 +399,10 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   int **epsilon; // CPL2 parameters
   double **consts;
   
+  // 2nd Order Theories use a 2x4 matrix of coefficients
+  consts = malloc(2*sizeof(double*));
+  consts[0] = malloc(4*sizeof(double));
+  consts[1] = malloc(4*sizeof(double));
   
   epsilon = malloc(2*sizeof(int*));
   epsilon[0] = malloc(10*sizeof(int));
@@ -410,6 +414,15 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   chi = malloc(2*sizeof(double));
   dTideHeat = malloc(2*sizeof(double));
   dTideSurfFlux = malloc(2*sizeof(double));
+
+  // Should a body already be tidally locked?
+  CheckTideLock(&param,&pri,&sec,&io,consts,0);
+
+  // Initialize funciton pointer derivatives and integration constants
+  AssignDerivs(&param,&pri,&sec);
+  AssignConstants(&param,&pri,&sec,consts);
+
+  dSemi=dMeanMotionToSemi(sec.dMeanMotion,(pri.dMass+sec.dMass));
 
   if (iEnd == 0) {
     sprintf(cTime,"Input");
@@ -721,7 +734,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   fprintd(fp,sec.dSpinRate*dTimeUnit(param.iUnitTime,io.exit_units),io.iSciNot,io.iDigits);
   fprintf(fp,"\n");
   
-  tmp=2*atan(pri.dRadius/sec.dSemi);
+  tmp=2*atan(pri.dRadius/dSemi);
   if (param.iUnitAngle == 1)
     tmp /= dAngleUnit(param.iUnitAngle,io.exit_units);
   fprintf(fp,"%s Angular Size of Primary body: ",cTime);
@@ -731,7 +744,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   fprintf(fp,"\n-------------- Orbit ----------\n\n");
   
   fprintf(fp,"%s Semi-major Axis: ",cTime);
-  fprintd(fp,sec.dSemi/dLengthUnit(param.iUnitLength,io.exit_units),io.iSciNot,io.iDigits);
+  fprintd(fp,dSemi/dLengthUnit(param.iUnitLength,io.exit_units),io.iSciNot,io.iDigits);
   fprintf(fp,"\n");
 
   fprintf(fp,"%s Orbital Mean Motion: ",cTime);
@@ -755,7 +768,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   if (param.iTideModel == CPL2) {
     /* Constant-Phase-Lag, order 2 */
 
-    DerivsCPL2(param.Derivs,&pri,&sec,&io,consts,f,dBeta,epsilon,0,param.bDiscreteRot);
+    DerivsCPL2(&param.Derivs,&pri,&sec,&io,consts,f,dBeta,epsilon,0,param.bDiscreteRot);
 
     dEqSpinRate[0] = EqSpinRate_CPL2(sec.dMeanMotion,sec.dEcc,pri.dObliquity,param.bDiscreteRot);
     dEqSpinRate[1] = EqSpinRate_CPL2(sec.dMeanMotion,sec.dEcc,sec.dObliquity,param.bDiscreteRot);
@@ -775,7 +788,7 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   } else if (param.iTideModel == CTL8) {
     dBeta = AssignBeta(sec.dEcc);
     
-    DerivsCTL8(param.Derivs,&pri,&sec,&io,consts,f,dBeta,epsilon,0,param.bDiscreteRot);
+    DerivsCTL8(&param.Derivs,&pri,&sec,&io,consts,f,dBeta,epsilon,0,param.bDiscreteRot);
 
     dEqSpinRate[0] = EqSpinRate_CTL8(sec.dMeanMotion,sec.dEcc,pri.dObliquity,param.bDiscreteRot);
     dEqSpinRate[1] = EqSpinRate_CTL8(sec.dMeanMotion,sec.dEcc,sec.dObliquity,param.bDiscreteRot);
@@ -906,9 +919,10 @@ void WriteLog(PARAM param,PRIMARY pri,SECONDARY sec,OUTPUT output,FILES files,IO
   if (param.halt.bDblSync) 
     fprintf(fp,"HALT at double synchronous state.\n");
   
-  free(epsilon[1]);
-  free(epsilon[0]);
+  //free(epsilon[1]);
+  //free(epsilon[0]);
   free(epsilon);
+  free(consts);
   free(z);
   free(zprime);
   free(f);
@@ -1032,7 +1046,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Semi-Major Axis */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_ORBSEMI])) {
-      col[j+n]=sec->dSemi;
+      col[j+n]=dMeanMotionToSemi(sec->dMeanMotion,(pri->dMass+sec->dMass));
       if (output->iNeg[OUT_ORBSEMI])
 	col[j+n] *= output->dConvert[OUT_ORBSEMI];
       else /* AU */
@@ -1042,7 +1056,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Orbital Period */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_ORBPER])) {
-      col[j+n]=a2p(sec->dSemi,(sec->dMass+pri->dMass));
+      col[j+n]=2*PI/sec->dMeanMotion;
       if (output->iNeg[OUT_ORBPER])
 	col[j+n] *= output->dConvert[OUT_ORBPER];
       else 
@@ -1064,9 +1078,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_PRIDADT])) {
       if (param->iTideModel == CPL2){  /* CPL2 */
 	//XXX col[j+n] = dDaDt1_CPL2(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,pri->dObliquity,epsilon[0],z[0]);
-      }else /* CTL8 */
-	col[j+n] = dDaDt1_CTL8(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[0],pri->dSpinRate,pri->dObliquity,f,beta);
-      
+      } else {/* CTL8 */
+	//col[j+n] = dDaDt1_CTL8(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[0],pri->dSpinRate,pri->dObliquity,f,beta);
+      }
       if (output->iNeg[OUT_PRIDADT])
 	col[j+n] *= output->dConvert[OUT_PRIDADT];
       else
@@ -1078,9 +1092,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_PRIDEDT])) {
       if (param->iTideModel == CPL2) { /* CPL2 */
 	//XXX col[j+n] = dDeDt1_CPL2(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,epsilon[0],z[0]);
-      } else /* CTL8 */
-	col[j+n] = dDeDt1_CTL8(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[0],pri->dSpinRate,pri->dObliquity,f,beta);
-      
+      } else {/* CTL8 */
+	//col[j+n] = dDeDt1_CTL8(pri->dMass,sec->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[0],pri->dSpinRate,pri->dObliquity,f,beta);
+      }
       if (output->iNeg[OUT_PRIDEDT])
 	col[j+n] *= output->dConvert[OUT_PRIDEDT];
       else
@@ -1262,9 +1276,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECDADT])) {
       if (param->iTideModel == CPL2) {  /* CPL2 */
 	//XXXcol[j+n] = dDaDt1_CPL2(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dObliquity,epsilon[1],z[1]);
-      }else /* CTL8 */
-	col[j+n] = dDaDt1_CTL8(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[1],sec->dSpinRate,sec->dObliquity,f,beta);
-      
+      } else {/* CTL8 */
+	//col[j+n] = dDaDt1_CTL8(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[1],sec->dSpinRate,sec->dObliquity,f,beta);
+      }
       if (output->iNeg[OUT_SECDADT])
 	col[j+n] *= output->dConvert[OUT_SECDADT];
       else
@@ -1276,9 +1290,9 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_SECDEDT])) {
       if (param->iTideModel == CPL2){  /* CPL2 */
 	//XXXcol[j+n] = dDeDt1_CPL2(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,epsilon[1],z[1]);
-      } else /* CTL8 */
-	col[j+n] = dDeDt1_CTL8(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[1],sec->dSpinRate,sec->dObliquity,f,beta);
-      
+      } else {/* CTL8 */
+	//col[j+n] = dDeDt1_CTL8(sec->dMass,pri->dMass,sec->dSemi,sec->dEcc,sec->dMeanMotion,z[1],sec->dSpinRate,sec->dObliquity,f,beta);
+      }
       if (output->iNeg[OUT_SECDEDT])
 	col[j+n] *= output->dConvert[OUT_SECDEDT];
       else
@@ -1518,7 +1532,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     
     /* Total Energy */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_TOTEN])) {
-      col[j+n] = dOrbEn(pri->dMass,sec->dMass,sec->dSemi) + dRotEn(pri->dMass,pri->dRadius,pri->dRG,pri->dSpinRate) + dRotEn(sec->dMass,sec->dRadius,sec->dRG,sec->dSpinRate);
+      //XXX col[j+n] = dOrbEn(pri->dMass,sec->dMass,sec->dSemi) + dRotEn(pri->dMass,pri->dRadius,pri->dRG,pri->dSpinRate) + dRotEn(sec->dMass,sec->dRadius,sec->dRG,sec->dSpinRate);
       if (output->iNeg[OUT_TOTEN]) 
 	/* ergs is for negative, so do nothing */
 	{}
@@ -1535,7 +1549,7 @@ void Output(PARAM *param,PRIMARY *pri,SECONDARY *sec,OUTPUT *output,IO *io,doubl
     /* Semi-Major Axis Timescale */
     if (!strcmp(param->cOutputOrder[j],output->cParam[OUT_TAUSEMI])) {
       if (sec->dDnDt != 0)//XXXX 
-	col[j+n] = fabs(sec->dMeanMotion/sec->dDnDt);//XXX
+	col[j+n] = fabs(sec->dMeanMotion/sec->dDnDt);
       else
 	col[j+n] = HUGE;
       

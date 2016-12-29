@@ -383,7 +383,8 @@ double dMeanMotionToSemi(double dMM,double dMass) {
 }
 
 double dOrbAngMom(PRIMARY *pri,SECONDARY *sec) {
-  return pow( BIGG*(pri->dMass+sec->dMass)*sec->dSemi*(1-sec->dEcc*sec->dEcc),0.5);
+  return 0;
+  //XXX return pow( BIGG*(pri->dMass+sec->dMass)*sec->dSemi*(1-sec->dEcc*sec->dEcc),0.5); Change to MeanMotion
 }
 
 double dSpinAngMom(double dRG,double dMass,double dRad,double dOmega) {

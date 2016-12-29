@@ -118,7 +118,6 @@ typedef struct {
   int bForceEqSpin;     /**< Tidally lock second? */
   double dMaxLockDiff;  /**< When to set spin rate to equilibrium */
 
-  double dSemi;         /**< Semi-major axis */
   double dEcc;          /**< Eccentricity */
   double dMeanMotion;   /**< Mean Motion */
   double dAge;          /**< System Age */
@@ -183,7 +182,7 @@ typedef struct {
 
 typedef struct {
   HALT halt;            /**< Halt substruct */
-  DERIVS *Derivs;       /** Derives substruct */
+  DERIVS Derivs;       /**< Derivs substruct */
   
   int iUnitMass;        /**< Mass Unit for input/output */
   int iUnitLength;      /**< Length Unit for input/output */
@@ -329,9 +328,13 @@ double dTideHeat_CTL8(double,double*,double,double,double,double);
 double dTideHeatEq_CTL8(double,double*,double,double,double);
 void DerivsCTL8(DERIVS*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double,int);
 
+void CheckTideLock(PARAM*,PRIMARY*,SECONDARY*,IO*,double**,double);
+
 /* Integration Methods */
 double EulerStep(PARAM*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double*,double,int);
 double RK4Step(PARAM*,PRIMARY*,SECONDARY*,IO*,double**,double*,double,int**,double*,double,int);
+void AssignDerivs(PARAM*,PRIMARY*,SECONDARY*);
+void AssignConstants(PARAM*,PRIMARY*,SECONDARY*,double**);
 
 /* Conserved Quantities */
 double dOrbAngMom(PRIMARY*,SECONDARY*);
