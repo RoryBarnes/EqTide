@@ -19,7 +19,9 @@
  *                                                                    *
  **********************************************************************/
 
-#define MEARTH        5.972186e27 // Prsa et al. 2016   
+#include <float.h>
+
+#define MEARTH        5.972186e27 // Prsa et al. 2016
 #define MSUN          1.988416e33 // Prsa et al. 2016
 #define AUCM          1.49598e13
 #define RSUN          6.957e10     // Prsa et al. 2016
@@ -47,7 +49,7 @@
 #define EXIT_OUTPUT   6
 
 #define VERBERR       1
-#define VERBPROG      2    
+#define VERBPROG      2
 #define VERBINPUT     3
 #define VERBUNITS     4
 #define VERBALL       5
@@ -59,12 +61,12 @@
 
 /* EPS is the floor for which two numbers are deemed to be unequal. If the
 difference between two numbers is < EPS, then they are assumed to be the same.
-This is particularly important for tidally locked body for which round-off 
-errors can cause the difference of the mean motion and rotational frequency 
-to be non-zero. */ 
+This is particularly important for tidally locked body for which round-off
+errors can cause the difference of the mean motion and rotational frequency
+to be non-zero. */
 #define EPS           1e-10
 
-#define TINY          (1./HUGE)
+#define TINY          (1./DBL_MAX)
 
 #define CPL           1
 #define CTL           10
@@ -72,7 +74,7 @@ to be non-zero. */
 #define EULER         0
 #define RK4           1
 
-/*! The primary (more massive) body in the system. This struct 
+/*! The primary (more massive) body in the system. This struct
   does not contain orbital information. */
 
 typedef struct {
@@ -95,7 +97,7 @@ typedef struct {
   double dDobliquityDt; /**< Time derivative of obliquity */
 } PRIMARY;
 
-/*! The secondary (less massive) body in the system. This struct 
+/*! The secondary (less massive) body in the system. This struct
   contains the orbital information. */
 
 typedef struct {
@@ -140,7 +142,7 @@ typedef struct {
 
 } IO;
 
-/*! Function pointer to the derivative subroutines. This variable is set 
+/*! Function pointer to the derivative subroutines. This variable is set
   to the address of the subroutines that calculate the deriviatives.
   The two options are CPL or CTL as set by iTideModel. */
 typedef void (*fvDerivs)(PRIMARY*,SECONDARY*,IO*,double*,double*,double*,double,int**,double,int);
@@ -180,7 +182,7 @@ typedef struct {
 
   double l0;            /**< Initial angular momentum */
   double dl;            /**< Change in angular momentum: (l-l0)/l0 */
- 
+
   char *cOutputOrder[NUMOUT]; /**< Output order */
   int iNumCols;         /**< Number if columns in output file */
 
@@ -239,12 +241,12 @@ void fprintd(FILE*,double,int,int);
 char *InitializeString();
 
 /* Mass-Radius relations */
-double dBaylessOrosz06_MassRad(double); 
+double dBaylessOrosz06_MassRad(double);
 double dGordaSvech99_MassRad(double);
 double dReidHawley_MassRad(double);
 double dSotin07_MassRad(double);
-double dBaylessOrosz06_RadMass(double); 
-double dBaraffe15_MassRad(double); 
+double dBaylessOrosz06_RadMass(double);
+double dBaraffe15_MassRad(double);
 double dGordaSvech99_RadMass(double);
 double dReidHawley_RadMass(double);
 double dSotin07_RadMass(double);

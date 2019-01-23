@@ -14,7 +14,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <string.h>
-#include <float.h>
 #include "eqtide.h"
 #include "output.h"
 
