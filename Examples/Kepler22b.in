@@ -74,4 +74,4 @@ dMinValue             1e-10		# Reduce e or obl to 0 at this value
 # See help for a list of all output parameters.
 
 # Output Order
-sOutputOrder          Time Semi Ecc -SecPer SecObl -SecEqSurfFlux
+sOutputOrder          Time Semi Ecc -SecPer SecObl -SecEqSurfFlux TotAngMom
