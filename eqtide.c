@@ -147,8 +147,7 @@ double dDeDt1_CPL2(double dMass,double dMassPert,double dSemi,double dEcc,int *e
 
 double dDomegaDt_CPL2(double dMass,double dRadius,double dN,double dEcc,double dC,double dPsi,int *epsilon,double zprime) {
  
-  //  return -zprime/(8*dMass*dC*dC*dRadius*dRadius*dN)*(4*epsilon[0] + dEcc*dEcc*(-20*epsilon[0] + 49*epsilon[1] + epsilon[2]) + 2*sin(dPsi)*sin(dPsi)*(-2*epsilon[0]+epsilon[8]+epsilon[9]));
-  return -zprime/(4*dMass*dC*dC*dRadius*dRadius*dN)*(4*epsilon[0] + dEcc*dEcc*(-20*epsilon[0] + 49*epsilon[1] + epsilon[2]) + 2*sin(dPsi)*sin(dPsi)*(-2*epsilon[0]+epsilon[8]+epsilon[9]));
+  return -zprime/(8*dMass*dC*dC*dRadius*dRadius*dN)*(4*epsilon[0] + dEcc*dEcc*(-20*epsilon[0] + 49*epsilon[1] + epsilon[2]) + 2*sin(dPsi)*sin(dPsi)*(-2*epsilon[0]+epsilon[8]+epsilon[9]));
 }
 
 double dDoblDt_CPL2(double dMass,double dRadius,double dOmega,double dN,double dC,int epsilon[9],double dChi,double dPsi,double zprime) {
